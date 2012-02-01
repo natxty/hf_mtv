@@ -1,0 +1,108 @@
+Array
+(
+    [post_type] => cpt-vehicle
+    [id] => 7
+    [post_author] => 1
+    [post_date] => 2012-01-31 01:55:38
+    [post_date_gmt] => 2012-01-31 01:55:38
+    [post_content] => asdfasdf
+    [post_title] => Another ONe!
+    [post_excerpt] => 
+    [post_status] => publish
+    [comment_status] => closed
+    [ping_status] => closed
+    [post_password] => 
+    [post_name] => another-one
+    [to_ping] => 
+    [pinged] => 
+    [post_modified] => 2012-02-01 21:15:09
+    [post_modified_gmt] => 2012-02-01 21:15:09
+    [post_content_filtered] => 
+    [post_parent] => 0
+    [guid] => http://hf.magne.tc/?post_type=cpt-vehicle&#038;p=7
+    [menu_order] => 0
+    [post_mime_type] => 
+    [comment_count] => 0
+    [ancestors] => Array
+        (
+        )
+
+    [filter] => raw
+    [blogid] => 1
+
+
+    [_edit_last] => 1
+    [_edit_lock] => 1328132651:1
+    [_attachments] => YTo0OntzOjI6ImlkIjtpOjk7czo1OiJ0aXRsZSI7czoyMzoiTWF6ZGEtNi1zLWdyYW5kLXRvdXJpbmciO3M6NzoiY2FwdGlvbiI7czowOiIiO3M6NToib3JkZXIiO2k6MTt9
+    [vehicle_vin] => VIN (1234556)
+    [vehicle_year] => Year (2012)
+    [vehicle_make] => Make
+    [vehicle_model] => Model
+    [vehicle_trim] => Trim
+    [vehicle_transmission] => Transmission
+    [vehicle_mileage] => Mileage
+    [vehicle_exteriorcolor] => Exterior Color
+    [vehicle_interiorcolor] => Interior Color
+    [vehicle_accidents] => Known Accidents
+    [vehicle_accidents_explain] => Accidents Explain
+    [vehicle_tires] => Tires
+    [vehicle_paintworkperformed] => Paintwork Performed
+    [vehicle_paintworkperformed_explain] => Paintwork Explain
+    [vehicle_paintworkneeded] => Paintwork needed
+    [vehicle_paintworkneeded_explain] => Paintwork needed explain
+    [vehicle_smoker] => Smoker
+    [vehicle_interiorcondition] => Interior Condition
+    [vehicle_overalldesc] => Description of Overall Condition  
+    [vehicle_titleowner] => Who Owns the Title?  
+    [vehicle_replacingifsold] => Are you Replacing this Vehicle if Sold?  
+    [seller_firstname] => 
+    [seller_lastname] => 
+    [seller_email] => 
+    [seller_phone] => 
+    [seller_address1] => 
+    [seller_address2] => 
+    [seller_city] => 
+    [seller_state] => 
+    [seller_zipcode] => 
+    [timeleft] => 0 days 10 minutes 42 seconds
+    [min_amount] => 550.00
+    [highest_amount] => 300.00
+    [your_highest_amount] => 300.00
+    [bid_status] => Winning!
+    [title] => Hitfigure
+    [stylesheet] => http://hf.magne.tc/wp-content/themes/hitfigure/style.css
+    [body_class] => Array
+        (
+            [0] => logged-in
+        )
+
+    [wp_head] => <meta name='robots' content='noindex,nofollow' />
+<link rel='stylesheet' id='enhance.css-css'  href='http://hf.magne.tc/wp-content/plugins/magenhance/css/enhance.css?ver=3.3.1' type='text/css' media='all' />
+<script type='text/javascript' src='http://hf.magne.tc/wp-content/plugins/magenhance/js/enhance.min.js?ver=3.3.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var WordPress = {"ajaxurl":"http:\/\/hf.magne.tc\/wp-admin\/admin-ajax.php","url":"http:\/\/hf.magne.tc","wpurl":"http:\/\/hf.magne.tc","stylesheet_directory":"http:\/\/hf.magne.tc\/wp-content\/themes\/hitfigure","stylesheet_url":"http:\/\/hf.magne.tc\/wp-content\/themes\/hitfigure\/style.css","template_directory":"http:\/\/hf.magne.tc\/wp-content\/themes\/hitfigure","template_url":"http:\/\/hf.magne.tc\/wp-content\/themes\/hitfigure","atom_url":"http:\/\/hf.magne.tc\/feed\/atom\/","rss2_url":"http:\/\/hf.magne.tc\/feed\/","rss_url":"http:\/\/hf.magne.tc\/feed\/rss\/","pingback_url":"http:\/\/hf.magne.tc\/xmlrpc.php","rdf_url":"http:\/\/hf.magne.tc\/feed\/rdf\/","comments_atom_url":"http:\/\/hf.magne.tc\/comments\/feed\/atom\/","comments_rss2_url":"http:\/\/hf.magne.tc\/comments\/feed\/","current_blog_id":"1"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://hf.magne.tc/wp-content/plugins/magenhance/js/i.js?ver=3.3.1'></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+  enhance({
+  	loadStyles: [
+		  	],
+  	loadScripts: [
+		{"src":"http://code.jquery.com/jquery-1.7.1.min.js","media":"","excludemedia":"","iecondition":""},
+		{"src":"http://hf.magne.tc/wp-content/plugins/mtv/mtv.min.js","media":"","excludemedia":"","iecondition":""}  		
+  	],
+  	onScriptsLoaded: function() { document.getElementsByTagName('html')[0].className += ' visible'; }
+  });
+/* ]]> */
+</script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://hf.magne.tc/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://hf.magne.tc/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 3.3.1" />
+
+    [wp_footer] => 
+    [template_directory] => http://hf.magne.tc/wp-content/themes/hitfigure
+    [imgdir] => http://hf.magne.tc/wp-content/themes/hitfigure/images/
+)

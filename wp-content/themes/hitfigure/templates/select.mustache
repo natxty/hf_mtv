@@ -1,0 +1,17 @@
+<div class="{{^validated}}error{{/validated}}">
+	{{#text}}<label {{#id}}id="label-{{id}}"{{/id}} class="Label" for="{{name}}">{{text}}</label>{{/text}}
+	<select 
+		{{#id}}id="{{id}}"{{/id}} 
+		class="{{class}}" 
+		name="{{name}}" 
+		type="{{#secret}}password{{/secret}}{{^secret}}text{{/secret}}" 
+		{{#disabled}}disabled="disabled"{{/disabled}} 
+		{{#readonly}}readonly="true"{{/readonly}}
+	>
+	{{#options}}
+		{{&render}}
+	{{/options}}
+	</select>
+	{{#required}}<div class="required">(required)</div>{{/required}}
+	{{^validated}}<div class="not-validated">{{errormsg}}</div>{{/validated}}
+</div>	

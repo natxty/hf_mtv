@@ -1,0 +1,15 @@
+<div {{#id}}id="wrapper-{{id}}"{{/id}} class="{{^validated}}error{{/validated}}">
+	{{#text}}<label {{#id}}id="label-{{id}}"{{/id}} class="Label" for="{{name}}">{{text}}</label>{{/text}}
+	<input 
+		{{#id}}id="{{id}}"{{/id}} 
+		class="{{class}}" 
+		name="{{name}}" 
+		value="{{value}}" 
+		type="{{#secret}}password{{/secret}}{{^secret}}text{{/secret}}" 
+		{{#disabled}}disabled="disabled"{{/disabled}} 
+		{{#readonly}}readonly="true"{{/readonly}}
+	/>
+	{{#required}}<div class="required">(required)</div>{{/required}}
+	{{^validated}}<div class="not-validated">{{errormsg}}</div>{{/validated}}
+	
+</div>

@@ -1,0 +1,49 @@
+{{> header}}
+
+{{>dash-header}}
+
+{{>containerstart}}
+
+
+	<div class="column fleft">
+		<ul class="lead-details-main">
+			<li>VIN <p>{{vehicle_vin}}</p></li>
+			<li>Year <p>{{vehicle_year}}</p></li>
+			<li>Make <p>{{vehicle_make}}</p></li>
+			<li>Model <p>{{vehicle_model}}</p></li>
+			<li>Mileage <p>{{vehicle_mileage}}</p></li>
+			<li>Trim <p>{{vehicle_trim}}</p></li>
+			<li>Transmission <p>{{vehicle_transmission}}</p></li>
+			<li>Exterior Color <p>{{vehicle_exteriorcolor}}</p></li>
+			<li>Interior Color <p>{{vehicle_interiorcolor}}</p></li>
+		</ul>
+		
+		<ul class="lead-details-sub">
+			<li>Any known accidents? <p>{{vehicle_accident}}</p></li>
+			<li><p>{{vehicle_accident_explain}}</p></li>
+			<li><p>{{vehicle_tires}}</p></li>
+			<li><p>{{vehicle_paintworkperformed}}</p></li>
+			<li><p>{{vehicle_paintworkneeded}}</p></li>
+			<li><p>{{vehicle_smoker}}</p></li>
+			<li><p>{{vehicle_interiorcondition}}</p></li>
+			<li><p>{{vehicle_overalldesc}}</p></li>
+			<li><p>{{vehicle_titleowner}}</p></li>
+			<li><p>{{vehicle_replacingifsold}}</p></li>
+		</ul>
+		
+	<!-- end left col -->
+	</div>
+	
+	
+	
+	<div class="column fright">
+		{{_attachments}}
+	<!-- end right col -->
+	</div>
+
+
+
+
+{{>containerend}}
+
+{{> footer}}
