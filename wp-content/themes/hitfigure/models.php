@@ -6,6 +6,8 @@ use WPException, WP_Error, WP_User, DateTime;
 // Bring over the WP models from MTV... can't access these in our model unless we do it like this, boo!
 require_once( dirname(__FILE__) . '/models/mtv_wp_models.php' );
 
+require_once( dirname(__FILE__) . '/models/form_models.php' );
+
 function AdminAppFactory() {
 	// This will eventually choose from the different types of AdminApp's based on role
 	// For now just return the Super AdminApp!@!@!
@@ -435,6 +437,11 @@ function filter_where_48hours( $where = '' ) {
 
 class Vehicle extends Post {
 	public $defaults = array('post_type' => 'cpt-vehicle');
+	
+	public function get_attachments() {
+		return AttachmentCollection::for_post($this->id);
+	}
+	
 }
 
 

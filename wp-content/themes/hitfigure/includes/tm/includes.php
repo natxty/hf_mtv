@@ -10,6 +10,7 @@ require_once( dirname(__FILE__) . '/FormElement.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/Button.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/Image.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/Input.class.php' );
+require_once( dirname(__FILE__) . '/core-forms/FileInput.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/HiddenInput.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/RadioButton.class.php' );
 require_once( dirname(__FILE__) . '/core-forms/RadioGroup.class.php' );

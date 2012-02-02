@@ -19,25 +19,49 @@
 		</ul>
 		
 		<ul class="lead-details-sub">
-			<li>Any known accidents? <p>{{vehicle_accident}}</p></li>
-			<li><p>{{vehicle_accident_explain}}</p></li>
-			<li><p>{{vehicle_tires}}</p></li>
-			<li><p>{{vehicle_paintworkperformed}}</p></li>
-			<li><p>{{vehicle_paintworkneeded}}</p></li>
-			<li><p>{{vehicle_smoker}}</p></li>
-			<li><p>{{vehicle_interiorcondition}}</p></li>
-			<li><p>{{vehicle_overalldesc}}</p></li>
-			<li><p>{{vehicle_titleowner}}</p></li>
-			<li><p>{{vehicle_replacingifsold}}</p></li>
+			<li>Any known accidents? <p>{{vehicle_accidents}}</p></li>
+			<li>Accidents - Please Explain<br />
+				<p class="lead-det-desc">{{vehicle_accidents_explain}}</p>
+			</li>
+			<li>Tires Better or Worse than 60% <p>{{vehicle_tires}}</p></li>
+			<li>Any Paintwork Performed? <p>{{vehicle_paintworkperformed}}</p></li>
+			<li>Paintwork Performed - Please Explain<br />
+				<p class="lead-det-desc">{{vehicle_paintworkperformed_explain}}</p>
+			<li>Any Paintwork Needed?<p>{{vehicle_paintworkneeded}}</p></li>
+			<li>Paintwork Needed - Please Explain<br />
+				<p class="lead-det-desc">{{vehicle_paintworkneeded_explain}}</p>
+			</li>
+			<li>Smoker <p>{{vehicle_smoker}}</p></li>
+			<li>Interior Condition <p>{{vehicle_interiorcondition}}</p></li>
+			<li>Description of Overall Condition<br />
+				<p class="lead-det-desc">{{vehicle_overalldesc}}</p>
+			</li>
+			<li>Who Owns the Title? <p>{{vehicle_titleowner}}</p></li>
+			<li>Are you Replacing this Vehicle if Sold? <p>{{vehicle_replacingifsold}}</p></li>
 		</ul>
 		
+		<h3 class="lead-title pl20">Time Left to make an Offer<br />
+		<span>{{timeleft}}</span></h3>
+		<div class="lead-offer-box pl20">
+			<h3 class="lead-title">Make an Offer</h3>
+			<input id="" class="medium wide" type="number" tabindex="10" value="" name="input_16">
+			<p class="small">Please DO NOT include the $ in your offer amount.</p>
+			<input class="button" type="submit" value="Submit Offer" tabindex="93">
+		</div>
 	<!-- end left col -->
 	</div>
 	
 	
 	
 	<div class="column fright">
-		{{_attachments}}
+		<div class="lead-photo">
+			{{_attachments}}
+		</div>
+		<h3 class="lead-title">Seller Info</h3>
+		<p><strong>{{seller_firstname}} {{seller_lastname}}</strong><br />
+		<a href="mailto:{{seller_email}}">{{seller_email}}</a><br />
+		{{seller_city}}, {{seller_state}} {{seller_zipcode}}</p>
+		
 	<!-- end right col -->
 	</div>
 

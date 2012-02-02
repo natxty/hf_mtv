@@ -1,6 +1,6 @@
 <?php
 
-class TextArea extends ValueReadableView {
+class TextArea extends FormElement {
 
 
 

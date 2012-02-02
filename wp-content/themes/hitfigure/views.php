@@ -6,7 +6,8 @@ use hitfigure\models\VehicleCollection,
 	hitfigure\models\BidCollection,
 	hitfigure\models\Client,
 	hitfigure\models\Dealer,
-	hitfigure\models\Manufacturer;
+	hitfigure\models\Manufacturer,
+	hitfigure\models\AttachmentCollection;
 	
 require_once( dirname(__FILE__) . '/user_form_views.php' );
  
@@ -28,7 +29,64 @@ function dashboard( $request ) {
 	// Dashboard View
 	echo ' Dashboard ';	
 	$admin = \hitfigure\models\AdminAppFactory();
-	print_r($admin->user());
+	//print_r($admin->user());
+	
+	echo 'form tests...';
+	$f = new \FormHelper('test');
+	$f->method = 'POST';
+	$f->enctype = 'multipart/form-data';
+	
+	$r = new \RadioGroup('rgroup');
+	$r->setProperties(array(
+		'name'=>'rgroup',
+		'required'=>True
+	));
+	
+	$r->add_radio_button('rb', array('text'=>'1', 'value'=>'1'));
+	$r->add_radio_button('rb', array('text'=>'2', 'value'=>'2'));
+	$r->add_radio_button('rb', array('text'=>'3', 'value'=>'3'));
+	$r->add_radio_button('rb', array('text'=>'4', 'value'=>'4'));
+	$f->add($r);
+
+	$t = new \TextArea('text-area');
+	$t->setProperties(array(
+		'name'=>'mytextarea',
+		'required'=>True
+	));
+	$f->add($t);
+
+	$i = new \FileInput('fileinput');
+	$i->setProperties(array(
+		'name'=>'fileinput',
+		'required'=>True
+	));
+	$f->add($i);
+
+	$b = new \Button('confirm');
+	$b->setProperties(array(
+		'name'	=> 'confirm',
+		'text'	=> 'Confirm'
+	));
+	$f->add($b);
+	
+
+
+	if ( isset($_REQUEST['confirm']) ) { 
+		$f->applyUserInput(True);
+		
+		if (!$f->validate()) {	
+			// Unset anything private here, but our validation_func's should print errors etc.
+		} else {
+			// Do something on success...
+		}
+	}
+	
+	echo $f->render();
+	
+	$vehicle = new Vehicle(array('id'=>7));	
+	$vehicle->fetch();
+	//print_r($vehicle->get_attachments());
+	print_r(AttachmentCollection::filter());
 }
 
 
