@@ -27,11 +27,11 @@ function page( $request ) { // Generic Pages
 
 function dashboard( $request ) {
 	// Dashboard View
-	echo ' Dashboard ';	
+	//echo ' Dashboard ';
 	$admin = \hitfigure\models\AdminAppFactory();
 	//print_r($admin->user());
 	
-	echo 'form tests...';
+	//echo 'form tests...';
 	$f = new \FormHelper('test');
 	$f->method = 'POST';
 	$f->enctype = 'multipart/form-data';
@@ -81,13 +81,18 @@ function dashboard( $request ) {
 		}
 	}
 	
-	echo $f->render();
+	$sending = array($f->render());
 	
 	$vehicle = new Vehicle(array('id'=>7));	
 	$vehicle->fetch();
 	//print_r($vehicle->get_attachments());
-	print_r(AttachmentCollection::filter());
+	//print_r(AttachmentCollection::filter());
+
+    $vars = $vehicle->attributes + $vehicle->post_meta  + $sending + get_header_vars() + get_footer_vars() + wp_data();
+	//print_r($vars);
+	display_mustache_template('dashboard', $vars);
 }
+
 
 
 
