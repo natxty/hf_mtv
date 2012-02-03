@@ -12,6 +12,11 @@ add_role( 'hitfigure', 'HitFigure', array( 'manage_manufacturers', 'manage_deale
 add_role( 'manufacturer', 'Manufacturer', array( 'manage_dealers', 'bid' ) );
 add_role( 'dealer', 'Dealer', array( 'bid' ) );
 
+// Custom Image Sizes
+add_image_size( 'vehicle_img_full', 324, 250, true );
+add_image_size( 'vehicle_img_thumb', 50, 50, true );
+
+
 /* LOTS OF REQUIRES */
 // App
 //require_once( dirname(__FILE__) . '/app/Leads.class.php' );

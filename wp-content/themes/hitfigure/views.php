@@ -26,12 +26,16 @@ function page( $request ) { // Generic Pages
 
 
 function dashboard( $request ) {
+
+}
+
+function colin( $request ) {
 	// Dashboard View
-	//echo ' Dashboard ';
+	echo ' Dashboard ';	
 	$admin = \hitfigure\models\AdminAppFactory();
 	//print_r($admin->user());
 	
-	//echo 'form tests...';
+	echo 'form tests...';
 	$f = new \FormHelper('test');
 	$f->method = 'POST';
 	$f->enctype = 'multipart/form-data';
@@ -81,39 +85,41 @@ function dashboard( $request ) {
 		}
 	}
 	
-	$sending = array($f->render());
+	echo $f->render();
 	
 	$vehicle = new Vehicle(array('id'=>7));	
 	$vehicle->fetch();
 	//print_r($vehicle->get_attachments());
-	//print_r(AttachmentCollection::filter());
-
-    $vars = $vehicle->attributes + $vehicle->post_meta  + $sending + get_header_vars() + get_footer_vars() + wp_data();
-	//print_r($vars);
-	display_mustache_template('dashboard', $vars);
+	print_r($vehicle->get_attachments());
 }
-
-
-
 
 function view_leads( $request ) {
 	// View Leads
 	// This might be simplified even further if 
 	// the grid view is all ajax driven
-	$posts = VehicleCollection::filter();
+	$vars = get_header_vars() + get_footer_vars();
+	display_mustache_template('viewleads', $vars);
 	
-?>
-<pre>
-	<!--<?php print_r($posts); ?>-->
-	<?php foreach ($posts as $post): ?>
-		<?php print_r($post->get_attachments()); ?>
-	<?php endforeach; ?>
-</pre>
-<?php
 	
 }
 
+function ajax_lead_data( $request ) {
+	// Return Ajax data to datatables
+	// Eventually constrain by range...
+	$json = VehicleCollection::get_json_vehicle_data();
+ 	//print_r($json);
+ 	echo json_encode(array('aaData'=>$json));
+}
 
+function bid_status_text($status) {
+	if ($status === -1) {
+		return 'No Bids';
+	} elseif ($status === 0) {
+		return 'Losing';
+	} elseif ($status === 1) {
+		return 'Winning!';
+	}
+}
 
 function lead( $request ) {
 	// View Single Lead
@@ -124,7 +130,7 @@ function lead( $request ) {
 	$min_amount 			= BidCollection::getMinAmount($vehicle->id);
 	$highest_amount 		= BidCollection::getHighestBid($vehicle->id);
 	$your_highest_amount 	= BidCollection::yourHighestBid($vehicle->id);
-	$bid_status 			= BidCollection::bidStatus($vehicle->id);
+	$bid_status 			= bid_status_text(BidCollection::bidStatus($vehicle->id));
 	
 	$bidvars = array(
 		'timeleft'				=>VehicleCollection::time_left($id),
@@ -134,8 +140,9 @@ function lead( $request ) {
 		'bid_status'			=>$bid_status
 	);
 	
-	$vars = $vehicle->attributes + $vehicle->post_meta + $bidvars + get_header_vars() + get_footer_vars() + wp_data();
-	//print_r($vars);
+	$attachments = array('attachments'=>$vehicle->get_attachments());
+	
+	$vars = $vehicle->attributes + $vehicle->post_meta + $bidvars + get_header_vars() + get_footer_vars() + wp_data() + $attachments;
 	display_mustache_template('lead', $vars);
 }
 
@@ -188,51 +195,80 @@ function bid( $request ) {
 	// Bid
 	$id 	= $request['id']; // Lead (vehicle) ID
 
+	$bidvars = array(
+		'lead_found'=>False,
+		'lead_is_valid'=>False,
+		'oktogo'=>False,
+		'confirming_bid'=>False,
+		'placing_bid'=>False,
+		'errors'=>Null,
+		'bid_placed'=>Null,
+		'min_amount'=>Null,
+		'yourbidamount'=>Null
+	);
+
 	// Here we have to make sure that the Vehicle exists...
 	$vehicle = VehicleCollection::getVehicleByID($id);
+	
 	if (!$vehicle) {
-		echo 'Lead not found';
-		return;
-	}
-	
-	// Check out lead is valid
-	if ( !VehicleCollection::is_active($id) ) {
-		echo 'Invalid Lead';
-		return;
-	}
-	
-	$min_amount = BidCollection::getMinAmount($vehicle->id);
-	
-	if ( !isset($_REQUEST['confirm']) && !isset($_REQUEST['revise']) ) {
-		$f = place_bid_form($id, $min_amount);
-	}
-	
-	if ( isset($_REQUEST['submit'])	) {
-		$f->applyUserInput(True);
-		if (!$f->validate()) {		
-			// Probably do nothing, input validation will catch it
-		} else { // Validated!
-			echo 'confirm bid';
-			$f = confirm_bid_form($id);
+		$bidvars['lead_found'] = False;
+	} else {
+		$bidvars['lead_found'] = True;
+		
+		// Check out lead is valid
+		if ( !VehicleCollection::is_active($id) ) {
+			$bidvars['lead_is_valid'] = False;
+		} else {
+			$bidvars['lead_is_valid'] = True;
+			
+			$bidvars['oktogo'] = True;
+			
+			$min_amount = BidCollection::getMinAmount($vehicle->id);
+			
+			if ( !isset($_REQUEST['confirm']) && !isset($_REQUEST['revise']) && !isset($_REQUEST['submit']) ) {
+				$f = place_bid_form($id, $min_amount);
+				$bidvars['placing_bid'] = True;
+				$bidvars['min_amount'] = $min_amount;
+			}
+			
+			if ( isset($_REQUEST['submit'])	) {
+				$f = place_bid_form($id, $min_amount);
+				$f->applyUserInput(True);
+				if (!$f->validate()) {		
+					// Probably do nothing, input validation will catch it
+					$bidvars['placing_bid'] = True;
+					$bidvars['errors'] = True;
+					$bidvars['min_amount'] = $min_amount;
+				} else { // Validated!
+					$bidvars['confirming_bid'] = True;
+					$yourbidamount = $f->amount->value;
+					$bidvars['yourbidamount'] = $yourbidamount;
+					$f = confirm_bid_form($id);
+				}
+			} elseif ( isset($_REQUEST['confirm']) ) {
+				$f = confirm_bid_form($id);
+				$f->applyUserInput(True);
+				// Bid confirmed... just display a confirmation message
+				$yourbidamount = $f->amount->value;
+				BidCollection::place($f->amount->value,$id, $vehicle->post_title);
+				$bidvars['bid_placed'] = True;
+				$bidvars['yourbidamount'] = $yourbidamount;
+				$f = null;
+			} elseif ( isset($_REQUEST['revise']) ) {
+				// Back to the top...
+				$bidvars['placing_bid'] = True;
+				$bidvars['min_amount'] = $min_amount;
+				$f = place_bid_form($id, $min_amount);
+			}
 		}
-	} elseif ( isset($_REQUEST['confirm']) ) {
-		$f = confirm_bid_form($id);
-		$f->applyUserInput(True);
-		// Bid confirmed... just display a confirmation message
-		echo "Your bid has been placed for $$f->amount->value";
-		BidCollection::place($f->amount->value,$id, $vehicle->post_title);
-		$f = null;
-	} elseif ( isset($_REQUEST['revise']) ) {
-		// Back to the top...
-		$f = place_bid_form($id, $min_amount);
 	}
 	
-	echo $f ? $f->render() : '';
+	$form = $f ? $f->render() : '';
+	$vars = array('form'=>$form) + get_header_vars() + get_footer_vars() + wp_data() + $bidvars;
+	display_mustache_template('bid', $vars);
 }
 
 function place_bid_form($id, $min_amount = 250) {
-	echo "MIN AMOUNT: $min_amount<br>";
-
 	$f = new \FormHelper('place_bid');
 	$f->method = "POST";	
 

@@ -1,0 +1,129 @@
+{{> header-front}}
+
+{{>front-header}}
+
+{{>front-containerstart}}
+
+
+<div class="sidebar">
+	<img class="step-one-graphic" alt="Step 1" src="{{imgdir}}/step-one-graphic.png">
+	<h2 class="title">Step 1</h2>
+	<div class="form-wrapper">
+		<h2 class="form-title">Vehicle Info</h2>
+		{{#form}} 
+		
+		<form {{#id}}id="{{id}}"{{/id}} action="{{action}}" method="{{method}}" {{#enctype}}enctype="{{enctype}}"{{/enctype}}>
+		
+			<div id="form_page_1" class="seller_form_container visible">
+			
+			  {{&id_vehicle_year}}
+			  
+			  {{&id_vehicle_make}}
+			  
+			  {{&id_vehicle_model}}
+			  
+			  {{&id_vehicle_trim}}
+			  
+			  {{&id_vehicle_transmission}}
+			  
+			  {{&id_vehicle_mileage}}
+			  
+			  {{&id_vehicle_exterior_color}}
+			  
+			  {{&id_vehicle_interior_color}}
+			  
+			  {{&id_vehicle_known_accidents_label}}
+			  
+			  {{&id_vehicle_known_accidents}}
+			  
+			  	<div id="sub_vehicle_known_accidents" class="hidden">
+					{{&id_vehicle_accidents_explain}}
+				</div>
+				
+				{{&id_vehicle_tires_sixty_percent_label}}
+				
+				{{&id_vehicle_tires_sixty_percent}}
+				<br />
+				
+				{{&id_vehicle_paintwork_performed_label}}
+			  
+			  	{{&id_vehicle_paintwork_performed}}
+			  
+			  	<div id="sub_vehicle_paintwork_performed" class="hidden">
+					{{&id_vehicle_paintwork_performed_explain}}
+				</div>
+				
+				{{&id_vehicle_paintwork_needed_label}}
+			  
+			  	{{&id_vehicle_paintwork_needed}}
+			  
+			  	<div id="sub_vehicle_painwork_needed" class="hidden">
+					{{&id_vehicle_paintwork_needed_explain}}
+				</div>
+				
+				{{&id_vehicle_interior_condition}}
+				
+				{{&id_vehicle_overall_condition}}
+				
+				{{&id_vehicle_title_owner_label}}
+				
+				{{&id_vehicle_title_owner}}
+				
+				{{&id_vehicle_replace_if_sold_label}}
+				
+				{{&id_vehicle_replace_if_sold}}
+				
+				
+				<!--// NEXT BUTTON -->
+				<button type="button" value="next" />NEXT</button>
+			
+			</div><!--// end #form_page_1 -->
+			
+			
+			<div id="form_page_2" class="seller_form_container hidden">
+				
+				<!--// FILE UPLOADS -->
+				
+				<!--// NEXT BUTTON -->
+				<button type="button" value="next" />NEXT</button>
+			
+				
+			</div><!--// end #form_page_2 -->
+			
+			<div id="form_page_3" class="seller_form_container hidden">
+				
+				<!--// PERSONAL INFO -->
+				
+				{{&id_vehicle_first_name}}
+				
+				{{&id_vehicle_last_name}}
+				
+				{{&id_vehicle_email}}
+				
+				{{&id_vehicle_phone}}
+				
+				{{&id_vehicle_address_1}}
+				
+				{{&id_vehicle_address_2}}
+				
+				{{&id_vehicle_state}}
+				
+				{{&id_vehicle_zipcode}}
+				
+				{{&id_confirm}}
+				
+			</div><!--// end #form_page_3-->
+			
+			
+			
+		</form>
+		
+		{{/form}}
+	<!-- end form-wrapper -->
+	</div>
+<!-- end form div -->
+</div>
+
+{{>front-containerend}}
+
+{{> footer}} 

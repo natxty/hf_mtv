@@ -400,9 +400,9 @@ class VehicleCollection extends PostCollection {
 		}
 	}
 	
-	public static function activeLeads() {
+	public static function activeLeads($args = array()) {
 		add_filter( 'posts_where', 'hitfigure\models\filter_where_48hours');
-		$vehicles = self::filter();
+		$vehicles = self::filter($args);
 		remove_filter( 'posts_where', 'hitfigure\models\filter_where_48hours' );
 		return $vehicles;
 	}
@@ -410,26 +410,34 @@ class VehicleCollection extends PostCollection {
 	public static function time_left( $id ) {
 		$vehicle = self::is_active($id);
 		if ($vehicle) {
-			$postDateStart 	= new DateTime($vehicle->post_date);
-			$postDateEnd 	= new DateTime($vehicle->post_date);
-			$postDateEnd->modify('+2 day');
-						
-			$todaysDate = new DateTime;
-			
-			$interval = $todaysDate->diff($postDateEnd);
-			return $interval->format('%d days %i minutes %s seconds');
+			return $vehicle->time_left();
 		} else {
 			return 'Expired';
 		}
 	}	
+	
+	public static function get_json_vehicle_data() {
+		// Constrain by role, expired, distance
+		$args = array(
+			// nothing here yet...
+		);
+		
+		$vehicles_json = array();
+		
+		$vehicles = self::activeLeads($args);
+		foreach ($vehicles as $vehicle) {
+			$vehicles_json[] = $vehicle->to_json();
+		}
+		
+		return $vehicles_json;
+	}
 	
 }
 
 
 // Our Filter For Date
 function filter_where_48hours( $where = '' ) {
-	// posts in the last 30 days
-	$where .= " AND post_date > '" . date('Y-m-d', strtotime('-2 days')) . "'";
+	$where .= " AND post_date > '" . date('Y-m-d h:i:s', strtotime('-2 days')) . "'";
 	return $where;
 }
 
@@ -439,11 +447,84 @@ class Vehicle extends Post {
 	public $defaults = array('post_type' => 'cpt-vehicle');
 	
 	public function get_attachments() {
-		return AttachmentCollection::for_post($this->id);
+		$_attachments = array();
+		$attachments = attachments_get_attachments($this->id);
+		foreach($attachments as $attachment) {
+			$_attachment = new VehicleAttachment(array('id'=>$attachment['id']));
+			$_attachment->fetch();
+			$_attachments[] = $_attachment;
+		}
+		return $_attachments;
+	}
+	
+	public function time_left($format="%d days %h hours %i minutes %s seconds") {
+	
+		$postDateStart 	= new DateTime($this->post_date);
+		$postDateEnd 	= new DateTime($this->post_date);
+		$postDateEnd->modify('+2 day');
+					
+		$todaysDate = new DateTime;
+		
+		if ($todaysDate > $postDateEnd) {
+			// Expired...
+			return;
+		}
+		
+		$interval = $todaysDate->diff($postDateEnd);
+		
+		return $interval->format($format);	
+	}
+	
+	public function to_json() {
+		$json = array();
+		
+		$json['vehicle_model'] 		= isset($this->post_meta['vehicle_model']) ? $this->post_meta['vehicle_model'] : '';
+		$json['vehicle_make'] 		= isset($this->post_meta['vehicle_make']) ? $this->post_meta['vehicle_make'] : '';
+		$json['vehicle_mileage'] 	= isset($this->post_meta['vehicle_mileage']) ? $this->post_meta['vehicle_mileage'] : '';
+		$json['time_left'] 			= $this->time_left('%h');
+		$json['bid_status'] 		= $this->bid_status();
+		$json['bid_offers'] 		= $this->bid_offers() ? 'Yes' : 'No';
+		return $json;
+	}
+	
+	public function bid_status() {
+		$status = BidCollection::bidStatus($this->id);
+		$status_text = '';
+		
+		if ($status === -1) {
+			$status_text = '';
+		} elseif ($status === 1) {
+			$status_text = 'Leading';
+		} elseif ($status === 0) {
+			$status_text = 'Trailing';
+		}
+		
+		return $status_text;	
+	}
+	
+	public function bid_offers() {
+		$status = BidCollection::bidStatus($this->id);
+		
+		if ($status != -1) {
+			return True;
+		}
 	}
 	
 }
 
+
+/* Vechicle Image Attachment */
+
+class VehicleAttachment extends Attachment {
+	public function parse( &$postdata ) { 
+		$ret = parent::parse($postdata);
+		
+		$ret['vehicle_img_full'] 	= wp_get_attachment_image( $ret['id'], 'vehicle_img_full' );
+		$ret['vehicle_img_thumb'] 	= wp_get_attachment_image( $ret['id'], 'vehicle_img_thumb' );
+		
+		return $ret;
+	}
+}
 
 
 /* Alert Models */
@@ -550,8 +631,7 @@ class BidCollection extends PostCollection {
     public static function bidStatus($parent_id) { 
    		$bids = self::getTopBid($parent_id);
    		if (!count($bids)) {
-   			// No Bids, return nothing
-   			return 'No bids';
+   			return -1;
    		}
 
      	$user = AdminAppFactory()->user();
@@ -560,9 +640,9 @@ class BidCollection extends PostCollection {
    		$bid = $bids->current();
    		   		
    		if ( (int)$bid->post_meta['user_id'] == (int)$user_id ) {
-   			return "Winning!";
+   			return 1;
    		} else {
-   			return "Losing";
+   			return 0;
    		}
     }
 }

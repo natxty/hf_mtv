@@ -40,22 +40,36 @@
 			<li>Are you Replacing this Vehicle if Sold? <p>{{vehicle_replacingifsold}}</p></li>
 		</ul>
 		
-		<h3 class="lead-title pl20">Time Left to make an Offer<br />
-		<span>{{timeleft}}</span></h3>
-		<div class="lead-offer-box pl20">
-			<h3 class="lead-title">Make an Offer</h3>
-			<input id="" class="medium wide" type="number" tabindex="10" value="" name="input_16">
-			<p class="small">Please DO NOT include the $ in your offer amount.</p>
-			<input class="button" type="submit" value="Submit Offer" tabindex="93">
-		</div>
+		{{#timeleft}} {{!Display this block if this lead hasn't expired}}
+			<h3 class="lead-title pl20">Time Left to make an Offer<br />
+			<span>{{timeleft}}</span></h3>
+			<span>Status:{{bid_status}}</span></h3>
+			<span>Highest Bid: {{highest_amount}}</span></h3>
+			<span>Your Current Bid: {{your_highest_amount}}</span></h3>
+			<div class="lead-offer-box pl20">
+				<h3 class="lead-title">Make an Offer</h3>
+				<input id="" class="medium wide" type="number" tabindex="10" value="" name="input_16">
+				<p class="small">Please DO NOT include the $ in your offer amount.</p>
+				<input class="button" type="submit" value="Submit Offer" tabindex="93">
+			</div>
+		{{/timeleft}}
+		{{^timeleft}} {{!Display this block if the lead has expired}}
+			EXPIRED!!!
+		{{/timeleft}}
 	<!-- end left col -->
 	</div>
 	
 	
 	
 	<div class="column fright">
-		<div class="lead-photo">
-			{{_attachments}}
+		<div id="dash-lead-slider" class="lead-photo">
+			{{#attachments}}
+				{{&vehicle_img_full}}
+			{{/attachments}}
+		</div>
+		<div class="dash-lead-thumbs">
+			{{#attachments}} <a href="">{{&vehicle_img_thumb}}</a> {{/attachments}}
+		  
 		</div>
 		<h3 class="lead-title">Seller Info</h3>
 		<p><strong>{{seller_firstname}} {{seller_lastname}}</strong><br />

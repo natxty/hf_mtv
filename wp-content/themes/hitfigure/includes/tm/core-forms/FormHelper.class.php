@@ -32,5 +32,9 @@ class FormHelper extends Form {
 		}
 		return True;		
 	}
+	
+	public function get_data() {
+		return $this->data;
+	}	
 
 }

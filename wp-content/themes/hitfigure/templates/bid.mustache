@@ -1,2 +1,29 @@
+{{^lead_found}}
+	<!-- No Lead Found... Output Message -->
+{{/lead_found}}
 
+{{^lead_is_valid}}
+	<!-- Lead is invalid (expired)... Output Message -->
+{{/lead_is_valid}}
 
+{{#oktogo}}
+	{{#errors}}
+		<div>ERROR</div>
+		<!-- Our form should display our errors, so we can put something like a big red 'error' box here -->
+	{{/errors}}
+
+	{{#placing_bid}}
+		{{min_amount}}
+	{{/placing_bid}}
+	
+	{{#confirming_bid}}
+		{{yourbidamount}}
+	{{/confirming_bid}}
+	
+	{{#bid_placed}}
+		{{yourbidamount}}
+	{{/bid_placed}}
+	
+	{{&form}}<!-- changes depending on what stage you're in -->
+	
+{{/oktogo}}

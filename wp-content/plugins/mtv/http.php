@@ -158,6 +158,18 @@ class Http500 extends HttpException {
             $ex = $this->getPrevious();
         else $ex = $this;
 
+		print_r(array(
+                'exception_class' => get_class($ex),
+                'exception' => $ex
+                /*
+                'globals'   => $GLOBALS,
+                'post'      => $_POST,
+                'get'       => $_GET,
+                'server'    => $_SERVER
+                */
+        ));
+		exit;
+
         shortcuts\display_template(
             '500.html',
             array(

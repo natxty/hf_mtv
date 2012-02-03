@@ -45,6 +45,8 @@ table { border-collapse: collapse; border-spacing: 0; }/* tables still need 'cel
 
 .fix{clear: both;height: 1px;margin: -1px 0 0;overflow: hidden;}
 
+/*.hidden {display: none;}*/
+
 html {height: 100%;}
 body  { font: normal 12px/1.5em Arial, sans-serif; color: #363636; background: url('images/front-bg-body.jpg') repeat-x center top white; }
 
@@ -424,7 +426,76 @@ body.page-home #bg-wrapper {
 		    font-size: 14px;
 		    text-transform: none;
 		    font-weight: bold;
+		    border-bottom: 1px dotted #CCCCCC;
+		    padding-bottom: 20px;
+		    margin-bottom: 20px;
 		}
+		
+		form#submit-vehicle {
+			
+		}
+		
+			.Label {
+				width: 29%;
+				font-weight: normal;
+			    line-height: 15px;
+			    margin: 2px 0 0;
+			    float: left;
+			}
+			
+			#label-rb.Label {
+				width: auto;
+			}
+			
+			.Select, .Input {
+				width: 213px;
+				font-family: inherit;
+			    font-size: 11px;
+			    letter-spacing: normal;
+			    outline-style: none;
+			    min-height: 16px;
+    			padding: 2px;
+			}
+			
+			.required {
+				font-size: 10px;
+				color: #bf1e2e;
+				font-style: italic;
+			}
+			
+			.Input {
+				height: 20px;
+			}
+			
+			#id_vehicle_known_accidents_label, #id_vehicle_paintwork_performed_label, #id_vehicle_paintwork_needed_label, #id_vehicle_title_owner_label {
+				display: inline;
+				float: left;
+			}
+			
+			#wrapper-id_vehicle_known_accidents, #wrapper-id_vehicle_paintwork_performed, #wrapper-id_vehicle_paintwork_needed, #wrapper-id_vehicle_title_owner {
+				display: inline;
+				float: right;
+				padding-left: 10px;
+			}
+			
+				#wrapper-rb {
+					display: inline;
+					float: left;
+					color: #BF1E2E;
+				}
+				
+			#wrapper-id_vehicle_title_owner #wrapper-rb {
+				display: block;
+				float: right;
+			}	
+				
+			#sub_vehicle_known_accidents, #sub_vehicle_paintwork_performed, #sub_vehicle_painwork_needed {
+				display: inline-block;
+			}
+			
+			#id_vehicle_accidents_explain.Input, #id_vehicle_paintwork_performed_explain.Input, #wrapper-id_vehicle_paintwork_needed_explain .Input, #wrapper-id_vehicle_overall_condition .Input {
+				height: 100px;
+			}
 		
 		
 /*** DASHBOARD PAGES ***/
@@ -632,12 +703,26 @@ body.page-dashboard #header .fright {
 				}
 				
 		.lead-photo {
-			width: 250px;
+			width: 324px;
 			height: 250px;
 			overflow: hidden;
 			background: #999;
-			margin-bottom: 30px;
+			margin-bottom: 10px;
 		}
+		
+		.dash-lead-thumbs {
+			padding-bottom: 20px;
+			margin-bottom: 20px;
+			border-bottom: 1px solid #999;
+		}
+		
+		.dash-lead-thumbs a.pager-active {
+			border-bottom: 1px solid #bf1e2e;
+		}
+		
+			img.attachment-vehicle_img_thumb {
+				padding: .5px;
+			}
 		
 		.lead-offer-box {
 			margin: 20px 0;
@@ -658,4 +743,6 @@ body.page-dashboard #header .fright {
 			color: #bf1e2e;
 			font-style: italic;
 			font-weight: bold;
+			font-size: 14px;
+			text-shadow: -1px -1px white, 1px 1px #969696;
 		}

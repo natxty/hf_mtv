@@ -11,9 +11,11 @@ $url_patterns = array(
 	'/admin\/bid\/(?P<id>[\d]+)/'						=> 'hitfigure\views\bid',
 	'/admin\/email\/(?P<id>[\d]+)/'						=> 'hitfigure\views\email_seller',
 	'/how-it-works/'									=> 'hitfigure\views\how_it_works',
+	'/colin/'											=> 'hitfigure\views\colin',
+	'/ajax_view_leads/' 								=> 'hitfigure\views\ajax_lead_data',
 	'/(?P<slug>[\w-\/]+)\/?$/' 							=> 'hitfigure\views\page'
 );
 
 $ajax_url_patterns = array(
-	'/ajax_app_setup/'	=> 'hitfigure\views\ajax_app_setup',
+	'/ajax_app_setup/'	=> 'hitfigure\views\ajax_app_setup'
 );
