@@ -435,6 +435,10 @@ body.page-home #bg-wrapper {
 			
 		}
 		
+			.select-wrapper {
+				margin-bottom: 10px;
+			}
+		
 			.Label {
 				width: 29%;
 				font-weight: normal;
@@ -457,10 +461,11 @@ body.page-home #bg-wrapper {
     			padding: 2px;
 			}
 			
-			.required {
+			#submit_vehicle .required {
 				font-size: 10px;
 				color: #bf1e2e;
 				font-style: italic;
+				display: none;
 			}
 			
 			.Input {
@@ -483,10 +488,18 @@ body.page-home #bg-wrapper {
 					float: left;
 					color: #BF1E2E;
 				}
+			
+			#wrapper-id_vehicle_title_owner {
+				width: 190px;
+				padding-bottom: 20px;
+				margin-bottom: 20px;
+				
+			}
 				
 			#wrapper-id_vehicle_title_owner #wrapper-rb {
 				display: block;
 				float: right;
+				height: 18px;
 			}	
 				
 			#sub_vehicle_known_accidents, #sub_vehicle_paintwork_performed, #sub_vehicle_painwork_needed {
@@ -495,6 +508,18 @@ body.page-home #bg-wrapper {
 			
 			#id_vehicle_accidents_explain.Input, #id_vehicle_paintwork_performed_explain.Input, #wrapper-id_vehicle_paintwork_needed_explain .Input, #wrapper-id_vehicle_overall_condition .Input {
 				height: 100px;
+			}
+			
+			.frontFormBtn {
+				width: 100%;
+				display: block;
+				clear: both;
+				padding: 5px 0;
+				
+			}
+			
+			.frontFormBtn:before {
+				content: "."; display: block;height: 0;clear: both; visibility: hidden;
 			}
 		
 		
