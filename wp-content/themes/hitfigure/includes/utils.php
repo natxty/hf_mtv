@@ -1,45 +1,5 @@
 <?php
 
-function get_header_vars() {
-	global $page, $paged;
-
-	$title  = wp_title( '|', false, 'right' );
-	$title .= get_bloginfo( 'name' );
-
-	// Add the blog description for the home/front page.
-	$site_description = get_bloginfo( 'description', 'display' );
-	if ( $site_description && ( is_home() || is_front_page() ) )
-		$title .= " | $site_description";
-
-	// Add a page number if necessary:
-	if ( $paged >= 2 || $page >= 2 )
-		$title .= ' | ' . sprintf( 'Page %s', max( $paged, $page ) );
-
-	$stylesheet = get_bloginfo( 'stylesheet_url' );
-	$body_class = get_body_class();
-
-	ob_start();
-	wp_head();
-	$wp_head = ob_get_contents();
-	ob_end_clean();
-	
-	return array(
-		'title'			=> $title,
-		'stylesheet'	=> $stylesheet,
-		'body_class'	=> $body_class,
-		'wp_head'		=> $wp_head
-	);
-}
-
-function get_footer_vars() {
-	ob_start();
-	wp_footer();
-	$wp_footer = ob_get_contents();
-	ob_end_clean();
-	
-	return array('wp_footer'=>$wp_footer);	
-}
-
 function get_page_queue($page) {
 
 	$page_queue = array();
@@ -73,13 +33,6 @@ function get_page_queue($page) {
 	// there should be an apply_filter here so extra stuff can be added to each page (like meta data)
 	/* Better yet... take a look at MTV's PostCollection model first */
 	return $page_queue;
-}
-
-function wp_data() {
-	return array(
-		'template_directory'=>get_bloginfo('template_directory'),
-		'imgdir'=>get_bloginfo('template_directory') . '/images'
-	);
 }
 
 function state_select_form($id="state", $args = array()) {

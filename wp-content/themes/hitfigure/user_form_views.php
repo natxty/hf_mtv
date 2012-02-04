@@ -1,6 +1,7 @@
 <?php
 
 namespace hitfigure\views;
+use hitfigure\models\HitFigure;
 
 function how_it_works() {
 
@@ -481,7 +482,11 @@ function how_it_works() {
 		
 	$formvars = array('form' => $f->get_data());
 
-    $vars = $formvars + get_header_vars() + get_footer_vars() + wp_data();
+
+	// HitFigure is the main 'app' class, your code is its bitch
+	$hitfigure = HitFigure::getInstance();	
+	$vars = $hitfigure->template_vars($formvars);
+
 	/*
 	print "<pre>\n";
     print_r($vars);
