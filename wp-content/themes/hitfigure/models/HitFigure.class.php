@@ -30,10 +30,26 @@ class HitFigure {
 
 	private function init() {
 		// Check if we're logged in...
-		$this->admin = new Admin();
+		$this->instantiate_admin();
 	}
 
 
+	
+	private function instantiate_admin() {
+		$user = UserCollection::get_current();
+		$roles = $user->roles;
+		
+		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
+			$this->admin = new Admin();
+		} elseif ( in_array('manufacturer', $roles) ) {
+			$this->admin = new ManufacturerAdmin();
+		} elseif ( in_array('dealer', $roles) ) {
+			$this->admin = new DealerAdmin();
+		}
+		
+	}
+	
+	
 	
 	public function template_vars($vars = array()) {
 		return $this->get_wp_data() + $this->get_header_vars() + $this->get_footer_vars() + $vars;
