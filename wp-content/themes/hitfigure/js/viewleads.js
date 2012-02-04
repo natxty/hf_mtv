@@ -8,7 +8,8 @@ $(document).ready(function() {
 			{ "mDataProp": "time_left" },
 			{ "mDataProp": "vehicle_model" },
 			{ "mDataProp": "vehicle_make" },
-			{ "mDataProp": "vehicle_mileage" }
+			{ "mDataProp": "vehicle_mileage" },
+			{ "mDataProp": "view_vehicle" }
 		]
 	} );
 } );

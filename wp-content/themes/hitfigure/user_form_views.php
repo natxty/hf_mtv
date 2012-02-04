@@ -7,6 +7,9 @@ function how_it_works() {
 	global $wpdb;
 	$tbl = $wpdb->prefix . "wtmod_cardb";
 	
+	$states = array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Armed Forces Americas', 'Armed Forces Europe', 'Armed Forces Pacific');
+	
+	
 	$f = new \FormHelper('submit_vehicle');
 	$f->method = 'POST';
 	
@@ -140,6 +143,7 @@ function how_it_works() {
 	$r->setProperties(array(
 		'id' => 'id_vehicle_known_accidents',
 		'name'=>'vehicle_known_accidents',
+		'class' => 'openchild',
 		'required'=>True
 	));
 
@@ -169,6 +173,7 @@ function how_it_works() {
     /* Tires Better/Worse 60% */
     $r = new \RadioGroup('vehicle_tires_sixty_percent');
 	$r->setProperties(array(
+		'id'=>'id_vehicle_tires_sixty_percent',
 		'name'=>'vehicle_tires_sixty_percent',
 		'required'=>True
 	));
@@ -278,7 +283,7 @@ function how_it_works() {
 	$f->add($s);
 
     /* Description of Overall Condition */
-    $s = new \Input('vehicle_overall_condition');
+    $s = new \Textarea('vehicle_overall_condition');
     $s->setProperties(array(
 		'id' =>'id_vehicle_overall_condition',
 		'name' =>'vehicle_overall_condition',
@@ -328,8 +333,34 @@ function how_it_works() {
 	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=> 'Yes'));
 	$r->add_radio_button('rb', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
+	
+	/*** CONTINUE TO PAGE TWO ***/
+	/*
+	$b = new \Button('vehicle_next_page_1');
+	$b->setProperties(array(
+		'id' => 'id_vehicle_next_page_1',
+		'name'	=> 'vehicle_next_page_1',
+		'text'	=> 'Continue'
+	));
+	$f->add($b);
+	*/
 
     /*** FILE UPLOADS **/
+	
+	for($x=1;$x<=10;$x++) {
+		$i = new \FileInput('fileinput');
+		$i->setProperties(array(
+			'id' =>'id_vehicle_image_'.$x,
+			'name' =>'vehicle_image_'.$x,
+			'text' =>'Photo '.$x,
+			'required'=>False
+		));
+		$f->add($i);
+	}
+	
+	
+	
+	/*** END FILE UPLOADS **/
 
     /* First Name */
     $s = new \Input('vehicle_first_name');
@@ -388,7 +419,7 @@ function how_it_works() {
 		'id' =>'id_vehicle_address_2',
 		'name' =>'vehicle_address_2',
 		'text' =>'Address 2',
-		'required'=>True
+		'required'=>False
 	));
     $f->add($s);
 
@@ -403,13 +434,20 @@ function how_it_works() {
     $f->add($s);
 
     /* State */
-    $s = new \Input('vehicle_state');
+    $s = new \Select('vehicle_state');
     $s->setProperties(array(
 		'id' =>'id_vehicle_state',
 		'name' =>'vehicle_state',
 		'text' =>'State',
 		'required'=>True
 	));
+	
+	$s->add_option('opt',array('text'=>'-- Select a State --'));
+    foreach($states as $state) {
+		$s->add_option('opt',array('text'=> $state, 'value' => $state ));	
+	}
+	$f->add($s);
+	
     $f->add($s);
 
     /* Zip Code */

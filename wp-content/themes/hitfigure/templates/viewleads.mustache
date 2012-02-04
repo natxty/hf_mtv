@@ -1,14 +1,19 @@
 {{> header}}
 
+{{>dash-header}}
+
+{{>containerstart}}
+
 <table cellpadding="0" cellspacing="0" border="0" class="display" id="view-leads">
 	<thead>
 		<tr>
 			<th width="20%">Offers</th>
 			<th width="25%">Status</th>
-			<th width="25%">Time Left</th>
+			<th width="25%">Time Left (hours)</th>
 			<th width="15%">Model</th>
 			<th width="15%">Make</th>
 			<th width="15%">Mileage</th>
+			<th width="15%">Details</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -18,12 +23,15 @@
 		<tr>
 			<th>Offers</th>
 			<th>Status</th>
-			<th>Time Left</th>
+			<th>Time Left (hours)</th>
 			<th>Model</th>
 			<th>Make</th>
 			<th>Mileage</th>
+			<th>Details</th>
 		</tr>
 	</tfoot>
 </table>
+
+{{>containerend}}
 
 {{> footer}}

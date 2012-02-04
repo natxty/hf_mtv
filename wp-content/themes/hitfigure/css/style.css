@@ -45,7 +45,19 @@ table { border-collapse: collapse; border-spacing: 0; }/* tables still need 'cel
 
 .fix{clear: both;height: 1px;margin: -1px 0 0;overflow: hidden;}
 
-/*.hidden {display: none;}*/
+.group:before,
+.group:after {
+    content:"";
+    display:table;
+}
+.group:after {
+    clear:both;
+}
+.group {
+    zoom:1; /* For IE 6/7 (trigger hasLayout) */
+}
+
+.hidden {display: none;}
 
 html {height: 100%;}
 body  { font: normal 12px/1.5em Arial, sans-serif; color: #363636; background: url('images/front-bg-body.jpg') repeat-x center top white; }
@@ -111,7 +123,7 @@ input, textarea {
 	padding: 0 0 80px;
 }
 
-.button { 
+.button, .Button { 
 	text-transform: uppercase;
 	font-weight: bold;
 	color: white !important;
@@ -134,7 +146,7 @@ input, textarea {
 	cursor: pointer;
 }
 
-.button:hover {
+.button:hover, .Button:hover {
 	text-decoration: none !important;
 	background: #BD212F;
 	background: -webkit-gradient( linear, left top, left bottom, color-stop(.2, #A81724), color-stop(1, #BD212F) );
@@ -434,8 +446,14 @@ body.page-home #bg-wrapper {
 		form#submit-vehicle {
 			
 		}
+			.radio_group_wrapper {
+				clear: left;
+				margin: 2px 0 5px;
+				border-bottom: 1px dotted #efefef;
+			}
 		
 			.select-wrapper {
+				clear: both;
 				margin-bottom: 10px;
 			}
 		
@@ -506,6 +524,10 @@ body.page-home #bg-wrapper {
 				display: inline-block;
 			}
 			
+			#sub_vehicle_known_accidents.hidden, #sub_vehicle_paintwork_performed.hidden, #sub_vehicle_painwork_needed.hidden {
+				display: none;
+			}
+			
 			#id_vehicle_accidents_explain.Input, #id_vehicle_paintwork_performed_explain.Input, #wrapper-id_vehicle_paintwork_needed_explain .Input, #wrapper-id_vehicle_overall_condition .Input {
 				height: 100px;
 			}
@@ -520,6 +542,12 @@ body.page-home #bg-wrapper {
 			
 			.frontFormBtn:before {
 				content: "."; display: block;height: 0;clear: both; visibility: hidden;
+			}
+			
+			#submit_vehicle textarea {
+				width: 200px;
+				height: 100px;
+				margin: 0 0 12px;
 			}
 		
 		
@@ -771,3 +799,38 @@ body.page-dashboard #header .fright {
 			font-size: 14px;
 			text-shadow: -1px -1px white, 1px 1px #969696;
 		}
+	
+	#label-amount.Label {
+		height: 33px;
+		line-height: 33px;
+		background: #a5d7aa;
+		font-size: 18px;
+		font-style: italic;
+		font-weight: bold;
+		padding-right: 20px;
+    	text-align: right;
+    	width: 36%;	
+    }
+	
+	#amount.Input {
+		width: 55%;
+		height: 30px;
+		font-size: 18px;
+		margin-left: 10px;
+    	padding-left: 10px;
+	}
+	
+	.not-validated {
+		width: 62%;
+		background: #ff7878;
+		padding: 14px;
+		font-size: 14px;
+		-moz-border-radius: 5px; 
+		-webkit-border-radius: 5px;
+		text-transform: uppercase;
+		color: #fff;
+		text-align: center;
+		margin: 10px 0;
+	}
+
+

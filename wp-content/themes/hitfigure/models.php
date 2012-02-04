@@ -41,7 +41,7 @@ class AdminApp {
 	}
 	
 	public function user() {
-		return UserCollection::get_current();
+		return ClientCollection::get_current();
 	}
 	
 	/* Roles */
@@ -63,7 +63,7 @@ class AdminApp {
 	}
 	
 	public function is_hitfigure() {
-		if ( in_array('hitfigure', $this->roles()) ) {
+		if ( in_array('hitfigure', $this->roles()) || in_array('Administrator', $this->roles()) ) {
 			return True;
 		} 	
 	}
@@ -101,16 +101,25 @@ class AdminApp {
 		
 		$client = new Client(array('id'=>$id));
 		$client->fetch();
+				
+		if (!$this->is_hitfigure()) {
+			// Do some additional checks
 		
-		if ( in_array('dealer',$client->roles) ) {
-			$type = 'dealer';
-		} elseif ( in_array('manufacturer',$client->roles) ) {
-			$type = 'manufacturer';
-		}
-		
-		if ( !$type ) {
-			// Not the right type of user...
-			return;
+			if ( in_array('dealer',$client->roles) ) {
+				$type = 'dealer';
+			} elseif ( in_array('manufacturer',$client->roles) ) {
+				$type = 'manufacturer';
+			}			
+			
+			if ( !$type ) {
+				// Not the right type of user...
+				return -1;
+			}
+			
+			if ( (int)$client->user_parent != $this->user()->id) {
+				// Can't edit this 
+				return -1; 
+			}
 		}
 		
 		return $this->update_client( $type, $client );		
@@ -120,13 +129,18 @@ class AdminApp {
 		// Create or Update a Client
 		
 		// If we're just updating a client we have it as an object already
-		$id = Null;
+		$id = Null; // -- !$id is used to check if we are registering a new user or not		
 		if ($client) {
 			$id = $client->id;
 		}
 	
 		$f = new \FormHelper('register_client');
 		$f->method = 'POST';
+		if (!$id) {
+			$f->action = '/admin/new/'.$type;
+		} else {
+			$f->action = '/admin/edit/'.$id;
+		}
 		
 		$i = new \Input('business_name');
 		$i->setProperties(array(
@@ -197,14 +211,22 @@ class AdminApp {
 		));
 		$f->add($i);			
 	
-		/* This needs to be a drop down...*/
+		/* This needs to be a drop down...
 		$i = new \Input('state');
 		$i->setProperties(array(
 			'name' =>'state',
 			'text' =>'State',
 			'required'=>True
 		));
-		$f->add($i);		
+		$f->add($i);
+		*/
+		
+		$s = state_select_form('state', array(
+			'name' =>'state',
+			'text' =>'State',
+			'required'=>True
+		));
+		$f->add($s);
 	
 		$i = new \Input('zipcode');
 		$i->setProperties(array(
@@ -280,6 +302,7 @@ class AdminApp {
 			} else {
 				// Validation Success, do our post-form processing
 				$client = Null;
+				
 				$args = array(
 					'id'				=>$id,
 					'business_name'		=>$f->business_name->value,
@@ -293,7 +316,8 @@ class AdminApp {
 					'state'				=>$f->state->value,
 					'zipcode'			=>$f->zipcode->value,
 					'user_login'		=>$f->user_login->value,
-					'user_pass'			=>$f->password->value
+					'user_pass'			=>$f->password->value,
+					'user_parent'		=>$this->user()->id
 				);
 							
 				switch($type) {
@@ -310,6 +334,10 @@ class AdminApp {
 					$f->confirmpassword->value = '';														
 				} else {
 					$client->save();
+					if (!$id) {
+						$url = get_bloginfo('wpurl').'/admin/edit/'.$client->id.'/?clientregistered='.ucfirst($type);
+						wp_redirect( $url, '302' );
+					}
 				}
 			}
 		} else {
@@ -424,7 +452,18 @@ class VehicleCollection extends PostCollection {
 		
 		$vehicles_json = array();
 		
+		
+		$admin = AdminAppFactory();
+		if (!$admin->is_hitfigure()) { // add additional where statement to limit to 50 miles
+			add_filter( 'posts_where', 'hitfigure\models\filter_where_lt_50miles');
+		}
+		
 		$vehicles = self::activeLeads($args);
+		
+		if (!$admin->is_hitfigure()) { // remove additional where statement to limit to 50 miles
+			remove_filter( 'posts_where', 'hitfigure\models\filter_where_lt_50miles');
+		}
+		
 		foreach ($vehicles as $vehicle) {
 			$vehicles_json[] = $vehicle->to_json();
 		}
@@ -441,6 +480,55 @@ function filter_where_48hours( $where = '' ) {
 	return $where;
 }
 
+function filter_where_lt_50miles( $where = '' ) {
+	global $wpdb;
+	
+	$admin = AdminAppFactory()->user();
+	$_lat_filter = $admin->lat;
+	$_lng_filter = $admin->lng;
+		
+	$where .= "AND
+(
+SELECT
+	TRUE
+FROM
+	(
+		SELECT 
+			pm.meta_value AS latitude,
+			p.ID AS ID
+		FROM 
+			wp_posts AS p
+		INNER JOIN
+			wp_postmeta AS pm
+		ON
+			p.ID = pm.post_id
+		WHERE
+			pm.meta_key = 'lat'
+	) lat
+INNER JOIN
+	(
+		SELECT 
+			pm.meta_value AS longitude,
+			p.ID AS ID
+		FROM 
+			wp_posts AS p
+		INNER JOIN
+			wp_postmeta AS pm
+		ON
+			p.ID = pm.post_id
+		WHERE
+			pm.meta_key = 'lng'
+	) lng
+ON
+	lng.ID = lat.ID
+WHERE
+	((ACOS(SIN( $_lat_filter * PI() / 180) * SIN(lat.latitude * PI() / 180) + COS( $_lat_filter * PI() / 180) * COS(lat.latitude * PI() / 180) * COS(($_lng_filter - lng.longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515 * 0.621371192) < 50
+	AND
+	lat.ID = wp_posts.ID
+) IS NOT NULL";
+
+	return $where;
+}
 
 
 class Vehicle extends Post {
@@ -456,6 +544,14 @@ class Vehicle extends Post {
 		}
 		return $_attachments;
 	}
+	
+    public function save() {
+    	$geodata = $this->get_geodata();
+       	$this->attributes['post_meta']['lat'] = $geodata['lat'];
+    	$this->attributes['post_meta']['lng'] = $geodata['lng'];
+    	
+    	parent::save();
+    }	
 	
 	public function time_left($format="%d days %h hours %i minutes %s seconds") {
 	
@@ -484,6 +580,7 @@ class Vehicle extends Post {
 		$json['time_left'] 			= $this->time_left('%h');
 		$json['bid_status'] 		= $this->bid_status();
 		$json['bid_offers'] 		= $this->bid_offers() ? 'Yes' : 'No';
+		$json['view_vehicle']		= display_mustache_template('viewitemlink', array('url'=>'/admin/lead/'.$this->id, 'text'=>'View Vehicle'), False);
 		return $json;
 	}
 	
@@ -509,6 +606,29 @@ class Vehicle extends Post {
 			return True;
 		}
 	}
+	
+    public function get_geodata() {
+       	$fulladdress = 	$this->post_meta['seller_address1'].' ';
+       	$fulladdress .=	$this->post_meta['seller_address2'].' ';
+       	$fulladdress .=	$this->post_meta['seller_city'].' ';
+       	$fulladdress .=	$this->post_meta['seller_zipcode'].' ';
+       	$fulladdress .=	$this->post_meta['seller_state'];	
+       	
+ 		$resp = wp_remote_get( "http://maps.googleapis.com/maps/api/geocode/json?address=".urlencode($fulladdress)."&sensor=false" );
+    	
+    	$lat = null;
+    	$lng = null;
+    	
+    	
+    	if ($resp['response']['message'] == 'OK') {
+    	 	$data = json_decode($resp['body']);	
+    		$lat = $data->results[0]->geometry->location->lat;
+    		$lng = $data->results[0]->geometry->location->lng;
+    	}
+ 
+    	
+    	return array('lat'=>$lat, 'lng'=>$lng);
+    }	
 	
 }
 
@@ -658,19 +778,41 @@ class Bid extends Post {
 /* Client Model */
 
 class ClientCollection extends UserCollection {
-	public static $model = "hitfigure\models\Client";
+	public static $model = "hitfigure\models\Client";	
 	public static $role = Null;
-	
+
 	public static function filter( $kwargs ) {
-		$kwargs['role'] = self::$role;
+		$kwargs['role'] = static::$role;
 		return parent::filter( $kwargs );
-	}	
+	}
+	
+	public static function get_json_client_data() {	
+		$constraints = array(); 
+		
+		$adminapp = AdminAppFactory();
+		
+		if (!$adminapp->is_hitfigure()) {
+			// apply constraints
+			$contraints = array('meta_key'=>'user_parent', 'meta_value'=>$adminapp->user()->id);
+		}
+		
+		$clients = static::filter($contraints);
+		$clients_json = array();
+		
+		foreach ($clients as $client) {
+			$clients_json[] = $client->to_json();
+		}
+		
+		return $clients_json;
+	}
+	
 }
 
 
 
 class Client extends User {
 	public $defaults = array();
+	public $role = '';
 	public $metakeys = array(
 		'business_name',
 		'first_name',
@@ -680,7 +822,10 @@ class Client extends User {
 		'address2',
 		'city',			
 		'state',			
-		'zipcode'
+		'zipcode',
+		'user_parent',
+		'lat',
+		'lng'
 	);
 
     public function validate() {
@@ -724,6 +869,46 @@ class Client extends User {
         
         return $ret;
     } 
+    
+    public function save() {
+    	$geodata = $this->get_geodata();
+    	$this->set($geodata);
+     	parent::save();
+    }
+    
+    public function to_json() {
+   		$json = array();
+		
+		$json['business_name'] = $this->business_name;
+		$json['city'] = $this->city;
+		$json['state'] = $this->state;
+		$json['reports'] = 0; // Probably a link to the reports page?
+		$json['edit_client'] = display_mustache_template('viewitemlink', array('url'=>'/admin/edit/'.$this->id, 'text'=>'Edit '.ucfirst($this->role)), False);
+		
+		return $json; 
+    }
+    
+    public function get_geodata() {
+    	$fulladdress =	$this->address.' ';
+    	$fulladdress .=	$this->address2.' ';
+    	$fulladdress .=	$this->city.' ';
+    	$fulladdress .=	$this->zipcode.' ';
+    	$fulladdress .=	$this->state;
+    	
+ 		$resp = wp_remote_get( "http://maps.googleapis.com/maps/api/geocode/json?address=".urlencode($fulladdress)."&sensor=false" );
+    	
+    	$lat = null;
+    	$lng = null;
+    	
+    	
+    	if ($resp['response']['message'] == 'OK') {
+    	 	$data = json_decode($resp['body']);	
+    		$lat = $data->results[0]->geometry->location->lat;
+    		$lng = $data->results[0]->geometry->location->lng;
+    	}
+    	
+    	return array('lat'=>$lat, 'lng'=>$lng);
+    }
 
 }
 
@@ -734,11 +919,16 @@ class Client extends User {
 class DealerCollection extends ClientCollection {
 	public static $model 	= "hitfigure\models\Dealer";
 	public static $role 	= "dealer";
+	
+	
+	
+	
 }
 
 
 
 class Dealer extends Client {
+	public $role = 'dealer';
 	
 	public function register() {
 		$r = parent::register();
@@ -758,12 +948,14 @@ class Dealer extends Client {
 class ManufacturerCollection extends ClientCollection {
 	public static $model 	= "hitfigure\models\Manufacturer";
 	public static $role 	= "manufacturer";
+
 }
 
 
 
 class Manufacturer extends Client {
-
+	public $role = 'manufacturer';
+	
 	public function register() {
 		$r = parent::register();
 		if ( !is_wp_error($r) ) {

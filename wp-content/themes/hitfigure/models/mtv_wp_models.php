@@ -641,7 +641,7 @@ class UserCollection extends Collection {
     public static function filter( $kwargs ) {
         # We set the blog_id query param to zero, so WordPress doesn't filter
         # the query based on the permissions for this blog. Hacky.
-        if ( !isset($kwargs['blog_id']) ) $kwargs['blog_id'] = 0;
+        //if ( !isset($kwargs['blog_id']) ) $kwargs['blog_id'] = 0;
 
         $class = get_called_class();
         $users = get_users( $kwargs );

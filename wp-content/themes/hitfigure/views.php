@@ -7,10 +7,15 @@ use hitfigure\models\VehicleCollection,
 	hitfigure\models\Client,
 	hitfigure\models\Dealer,
 	hitfigure\models\Manufacturer,
-	hitfigure\models\AttachmentCollection;
+	hitfigure\models\AttachmentCollection,
+	hitfigure\models\ClientCollection,
+	hitfigure\models\DealerCollection,
+	hitfigure\models\ManufacturerCollection;
 	
 require_once( dirname(__FILE__) . '/user_form_views.php' );
- 
+
+
+
 function page( $request ) { // Generic Pages
 	$page = get_page_by_path( $request['slug'] );
 	
@@ -25,9 +30,31 @@ function page( $request ) { // Generic Pages
 
 
 
-function dashboard( $request ) {
-
+function homepage( $request ) {
+	$vars = wp_data() + get_header_vars() + get_footer_vars();
+	display_mustache_template('homepage', $vars);
 }
+
+
+
+function faqs( $request ) {
+	$vars = wp_data() + get_header_vars() + get_footer_vars();
+	display_mustache_template('faqs', $vars);
+}
+
+
+
+function dashboard( $request ) {
+	//$v = new Vehicle(array('id'=>51));
+	//$v->fetch();
+	//$v->save();
+	
+	$admin = \hitfigure\models\AdminAppFactory();
+	$admin->user()->save();
+	print_r($admin->user());
+}
+
+
 
 function colin( $request ) {
 	// Dashboard View
@@ -97,7 +124,7 @@ function view_leads( $request ) {
 	// View Leads
 	// This might be simplified even further if 
 	// the grid view is all ajax driven
-	$vars = get_header_vars() + get_footer_vars();
+	$vars = wp_data() + get_header_vars() + get_footer_vars();
 	display_mustache_template('viewleads', $vars);
 	
 	
@@ -154,7 +181,15 @@ function edit_client( $request ) {
 	
 	$adminapp = \hitfigure\models\AdminAppFactory();
 	$form = $adminapp->edit_client( $id );
-	echo $form;
+	
+	$vars = array('form'=>$form) + get_header_vars() + get_footer_vars() + wp_data();
+	
+	if (isset($_GET['clientregistered'])) {
+		$vars['clientregistered'] = True;
+		$vars['clienttype'] = $_GET['clientregistered']; // -- This is the Type of client
+	}
+	
+	display_mustache_template('editclient', $vars);
 }
 
 
@@ -165,7 +200,10 @@ function new_client( $request ) {
 	
 	$adminapp = \hitfigure\models\AdminAppFactory();
 	$form = $adminapp->register_client( $type );
-	echo $form;
+	
+	$vars = array('form'=>$form) + get_header_vars() + get_footer_vars() + wp_data();
+	
+	display_mustache_template('newclient', $vars);
 }
 
 
@@ -173,10 +211,24 @@ function new_client( $request ) {
 function view_clients( $request ) {
 	// View Clients
 	$type	= $request['type']; // manufacturer / dealer
-	echo $type;	
+	
+	$vars = array('type'=>$type) + get_header_vars() + get_footer_vars() + wp_data(); 
+	display_mustache_template('viewclients', $vars);
 }
 
 
+function ajax_client_data( $request ) {
+	// Return Ajax data to datatables
+	$type	= $request['type']; // manufacturer / dealer
+	
+	if ($type == 'dealer') {
+		$json = DealerCollection::get_json_client_data();
+	} elseif ($type == 'manufacturer') {
+		$json = ManufacturerCollection::get_json_client_data();
+	}
+
+ 	echo json_encode(array('aaData'=>$json));
+}
 
 function view_alerts( $request ) {
 	// View Alerts
@@ -264,7 +316,7 @@ function bid( $request ) {
 	}
 	
 	$form = $f ? $f->render() : '';
-	$vars = array('form'=>$form) + get_header_vars() + get_footer_vars() + wp_data() + $bidvars;
+	$vars = array('form'=>$form) + $vehicle->attributes + $vehicle->post_meta + get_header_vars() + get_footer_vars() + wp_data() + $bidvars;
 	display_mustache_template('bid', $vars);
 }
 
