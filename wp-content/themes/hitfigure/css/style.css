@@ -59,6 +59,17 @@ table { border-collapse: collapse; border-spacing: 0; }/* tables still need 'cel
 
 .hidden {display: none;}
 
+.error {
+    background: #eb3739;
+    border: 1px solid #cd0a0a;
+    color: #efefef;
+    padding: 0 2px 0;
+}
+
+.error label {
+    color: #efefef;
+}
+
 html {height: 100%;}
 body  { font: normal 12px/1.5em Arial, sans-serif; color: #363636; background: url('images/front-bg-body.jpg') repeat-x center top white; }
 
@@ -424,7 +435,7 @@ body.page-home #bg-wrapper {
 	    position: absolute;
 	    top: 38px;
 	}
-	
+
 	.form-wrapper {
 	    background: none repeat scroll 0 0 #E4E5E5;
 	    margin: 0;
@@ -465,7 +476,7 @@ body.page-home #bg-wrapper {
 			    float: left;
 			}
 			
-			#label-rb.Label {
+			.radioLabel {
 				width: auto;
 			}
 			
@@ -489,6 +500,10 @@ body.page-home #bg-wrapper {
 			.Input {
 				height: 20px;
 			}
+
+.           .input-wrapper {
+                margin-bottom: 6px;
+            }
 			
 			#id_vehicle_known_accidents_label, #id_vehicle_paintwork_performed_label, #id_vehicle_paintwork_needed_label, #id_vehicle_title_owner_label {
 				display: inline;
@@ -501,7 +516,7 @@ body.page-home #bg-wrapper {
 				padding-left: 10px;
 			}
 			
-				#wrapper-rb {
+				.rb-single-wrapper {
 					display: inline;
 					float: left;
 					color: #BF1E2E;

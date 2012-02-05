@@ -1,8 +1,8 @@
-<div {{#id}}id="wrapper-{{id}}"{{/id}} class="{{^validated}}error {{/validated}} input-wrapper">
+<div {{#id}}id="wrapper-{{id}}"{{/id}} class="{{^validated}}error {{/validated}}input-wrapper">
 	{{#text}}<label {{#id}}id="label-{{id}}"{{/id}} class="Label" for="{{name}}">{{text}}{{#required}} <span>*</span>{{/required}}</label>{{/text}}
 	<input 
 		{{#id}}id="{{id}}"{{/id}} 
-		class="{{class}}" 
+		class="{{#required}}validate {{/required}}{{class}}"
 		name="{{name}}" 
 		value="{{value}}" 
 		type="{{#secret}}password{{/secret}}{{^secret}}text{{/secret}}" 

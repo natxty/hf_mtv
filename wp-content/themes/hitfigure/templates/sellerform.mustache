@@ -14,7 +14,7 @@
 		
 		<form {{#id}}id="{{id}}"{{/id}} action="{{action}}" method="{{method}}" {{#enctype}}enctype="{{enctype}}"{{/enctype}}>
 		
-			<div id="form_page_1" class="seller_form_container visible">
+			<div id="form_page_1" class="seller_form_container">
 			
 			  {{&id_vehicle_year}}
 			  
@@ -34,17 +34,17 @@
 			  
 			  
 			  
-			  <div id="id_vehicle_known_accidents_wrapper" class="radio_group_wrapper group">
+			    <div id="id_vehicle_known_accidents_wrapper" class="radio_group_wrapper group">
 			  
-			  	{{&id_vehicle_known_accidents_label}}
+			  	    {{&id_vehicle_known_accidents_label}}
 				
-				{{&id_vehicle_known_accidents}}
+				    {{&id_vehicle_known_accidents}}
 			  
-				  <div id="sub_vehicle_known_accidents" class="hidden">
-					  {{&id_vehicle_accidents_explain}}
-				  </div>
+				    <div id="sub_vehicle_known_accidents" class="hidden">
+					   {{&id_vehicle_accidents_explain}}
+				    </div>
 				  
-				</div><!--// end .radio_group_wrapper -->
+			    </div><!--// end .radio_group_wrapper -->
 				
 				
 				<div id="id_vehicle_tires_sixty_percent_wrapper" class="radio_group_wrapper group">
@@ -104,7 +104,7 @@
 				
 				
 				<!--// NEXT BUTTON -->
-				<button type="button" value="next" class="button frontFormBtn" />CONTINUE</button>
+				<a href="#form_page_2" class="button frontFormBtn" />CONTINUE</a>
 			
 			</div><!--// end #form_page_1 -->
 			
@@ -134,7 +134,7 @@
 				{{&id_vehicle_image_10}}
 				
 				<!--// NEXT BUTTON -->
-				<button type="button" value="next" class="button frontFormBtn" />NEXT</button>
+				<a href="#form_page_3" class="button frontFormBtn" />CONTINUE</a>
 			
 				
 			</div><!--// end #form_page_2 -->
@@ -158,7 +158,8 @@
 				{{&id_vehicle_state}}
 				
 				{{&id_vehicle_zipcode}}
-				
+
+				<!--// submit -->
 				{{&id_confirm}}
 				
 			</div><!--// end #form_page_3-->

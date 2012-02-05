@@ -20,5 +20,6 @@ $url_patterns = array(
 );
 
 $ajax_url_patterns = array(
-	'/ajax_app_setup/'	=> 'hitfigure\views\ajax_app_setup'
+	'/ajax_app_setup/'	=> 'hitfigure\views\ajax_app_setup',
+	'/ajax_form_data/'  => 'hitfigure\views\ajax_form_data'
 );

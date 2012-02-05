@@ -63,14 +63,13 @@ function how_it_works() {
 		'required'=>True
 	));
 	
-	/*
+
 	$order = 'ASC';
 	$models = $wpdb->get_results("select distinct car_model from $tbl order by car_model $order limit 100");
-	foreach($models as $model) {
+	$s->add_option('opt',array('text'=>'-- Select A Model --'));
+    foreach($models as $model) {
 		$s->add_option('opt',array('text'=>$model->car_model,'value'=> $model->car_model));
 	}
-	*/
-	$s->add_option('opt',array('text'=>'-- Select A Model --'));
 	$f->add($s);
 	
 	
@@ -144,12 +143,11 @@ function how_it_works() {
 	$r->setProperties(array(
 		'id' => 'id_vehicle_known_accidents',
 		'name'=>'vehicle_known_accidents',
-		'class' => 'openchild',
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=>1));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=>0));
+	$r->add_radio_button('rb_known_accidents_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_known_accidents_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 
     /* Accidents Please Explain */
@@ -179,8 +177,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=>1));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=>0));
+	$r->add_radio_button('rb_tires_sixty_percent_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_tires_sixty_percent_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 
 
@@ -201,8 +199,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=>1));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=>0));
+	$r->add_radio_button('rb_paintwork_performed_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_paintwork_performed_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 
     /* Paintwork? Please Explain */
@@ -232,8 +230,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=>1));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=>0));
+	$r->add_radio_button('rb_smoker_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_smoker_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 
     /* Paintwork Needed? Label */
@@ -253,8 +251,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=>1));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=>0));
+	$r->add_radio_button('rb_paintwork_needed_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_paintwork_needed_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 
     /* Paintwork Needed? Please Explain */
@@ -310,8 +308,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Payoff Required', 'value'=> 'Payoff Required'));
-	$r->add_radio_button('rb', array('text'=>'I Have The Title', 'value'=> 'I Have The Title'));
+	$r->add_radio_button('rb_title_owner_1', array('text'=>'Payoff Required', 'value'=> 'Payoff Required'));
+	$r->add_radio_button('rb_title_owner_2', array('text'=>'I Have The Title', 'value'=> 'I Have The Title'));
     $f->add($r);
 
     /* Replacing If Sold Label */
@@ -331,8 +329,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb', array('text'=>'Yes', 'value'=> 'Yes'));
-	$r->add_radio_button('rb', array('text'=>'No', 'value'=> 'No'));
+	$r->add_radio_button('rb_replacing_if_sold_1', array('text'=>'Yes', 'value'=> 'Yes'));
+	$r->add_radio_button('rb_replacing_if_sold_2', array('text'=>'No', 'value'=> 'No'));
     $f->add($r);
 	
 	/*** CONTINUE TO PAGE TWO ***/
@@ -494,6 +492,22 @@ function how_it_works() {
 	*/
 	
 	display_mustache_template('sellerform', $vars);
+}
+
+function ajax_form_data($request) {
+
+    $posts_data = json_decode($_POST['data']);
+
+    // do something with my data
+    $return_data = json_encode($posts_data);
+    
+    $success = true;
+
+    if ($success)
+        \mtv\shortcuts\display_json($return_data);
+    else
+        throw new \mtv\http\AjaxHttp500("Something bad happened.");
+
 }
 
 
