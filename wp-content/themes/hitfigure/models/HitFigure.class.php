@@ -104,7 +104,8 @@ class HitFigure {
 	function get_wp_data() {
 		return array(
 			'template_directory'=>get_bloginfo('template_directory'),
-			'imgdir'=>get_bloginfo('template_directory') . '/images'
+			'imgdir'=>get_bloginfo('template_directory') . '/images',
+			'logouturl'=>wp_logout_url( get_bloginfo('wpurl') . '/wp-admin/' )
 		);
 	}	
 

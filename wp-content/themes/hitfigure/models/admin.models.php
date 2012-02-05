@@ -3,8 +3,8 @@
 namespace hitfigure\models;
 
 /*
- * These classes represent the different privilage levels
- * functions in the Admin class are overridden depending on 
+ * These classes represent the different privilage levels.
+ * Functions in the Admin class are overridden depending on 
  * whether the user can act on them.
  *
  * The HitFigure class chooses which of these classes are the
@@ -17,10 +17,14 @@ namespace hitfigure\models;
 class BasicAdmin extends Admin {
 
 	protected function edit_client_vars( $client ) {
-		// Check if the current user is the parent of this client
-		if ( (int)$client->user_parent != $this->user->id) { 
-			$this->nopriv(); 
+		// Check if we're editing the current users profile...
+		if ((int)$client->id != $this->user->id) { 
+			// Check if the current user is the parent of this client...	
+			if ( (int)$client->user_parent != $this->user->id) {  
+				$this->nopriv(); 
+			}
 		}
+		return parent::edit_client_vars( $client );
 	}
 	
 	protected function get_lead_data_vars() {
@@ -34,7 +38,7 @@ class BasicAdmin extends Admin {
 	}
 	
 	protected function get_client_data_vars($type, $args=array()) {
-		$args = array('meta_key'=>'user_parent', 'meta_value'=>$hitfigure->admin->user->id);
+		$args = array('meta_key'=>'user_parent', 'meta_value'=>$this->user->id);
 		return parent::get_client_data_vars($type, $args);
 	}
 	

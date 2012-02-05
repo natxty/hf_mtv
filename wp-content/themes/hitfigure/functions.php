@@ -12,6 +12,27 @@ add_role( 'hitfigure', 'HitFigure', array( 'manage_manufacturers', 'manage_deale
 add_role( 'manufacturer', 'Manufacturer', array( 'manage_dealers', 'bid' ) );
 add_role( 'dealer', 'Dealer', array( 'bid' ) );
 
+// Custom Status 
+// -- this seems impossible, get_post_statuses() seems to only choose a limited number, but I don't know where it is called...
+// This is because wp-admin/includes/meta-boxes.php around line 87 you see that the post statuses are hard-coded...lame...
+/*
+add_action('wp_loaded', function() {
+	global $wp_post_statuses;
+	register_post_status('Expired', array(
+		'label' => 'Expired', 
+		'internal'=>false, 
+		'public'=>true,
+		'_builtin'=> true,
+		'label_count'=>_n_noop( 'Expired <span class="count">(%s)</span>', 'Expired <span class="count">(%s)</span>' ),
+		'publicly_queryable' => 1,
+        'show_in_admin_status_list' => 1,
+        'show_in_admin_all_list' => 1
+		)
+	);
+	print_r($wp_post_statuses);
+});
+*/
+
 // Custom Image Sizes
 add_image_size( 'vehicle_img_full', 324, 250, true );
 add_image_size( 'vehicle_img_thumb', 50, 50, true );

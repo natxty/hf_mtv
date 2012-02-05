@@ -95,7 +95,7 @@ function new_client( $request ) {
 	
 	$hitfigure = HitFigure::getInstance();
 
-	$adminvars = $hitfigure->admin->register_client($id);	
+	$adminvars = $hitfigure->admin->register_client($type);	
 
 	$vars = $hitfigure->template_vars($adminvars);
 	display_mustache_template('newclient', $vars);

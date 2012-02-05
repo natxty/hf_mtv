@@ -5,7 +5,8 @@ namespace hitfigure\models;
 
 /*
  * Our base Admin class
- * Each of our other Admin classes will apply contraints to this
+ * Each of our other Admin classes will apply contraints to this.
+ * For consistency, any method that should be overridden is protected. 
  */
  
  
