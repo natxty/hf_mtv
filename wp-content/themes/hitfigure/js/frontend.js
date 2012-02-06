@@ -3,9 +3,11 @@ $(document).ready(function() {
 
     //When page loads...
 	$(".seller_form_container").hide(); //Hide all content
-	$(".seller_form_container:first").show(); //Show first tab content
+    $(".subinfo").hide(); //Hide all subsections that will open with proper radio buttons
 
-	//On Click Event
+	$(".seller_form_container:first").show(); //Show first "page" content
+
+	//Page Progression + Validation click functions
 	$(".seller_form_container a.button").click(function() {
 
         var id = $(this).closest("div").attr("id"); //gather for validation purposes..
@@ -84,48 +86,136 @@ $(document).ready(function() {
 
         if(errors) {
             //alert('errors');
+            //error classes added individually above...
+            //TO-DO: print error description somewhere...
             
         } else {
+            //we're clear for lift-off
            $('.seller_form_container').hide();
             $(next_page).fadeIn();
         }
-
-
+        //make sure we stop the normal anchor/link function:
 		return false;
 	});
 
-
+    //wtf?
     MTV.debugging();
 
-    /* some nice formy functions */
+    /* Main Select Elements + AJAX calls to get filtered options from the DB */
+    /* Year => Makes */
     jQuery('#id_vehicle_year').change(function() {
 
 		cyear = jQuery('#id_vehicle_year').val();
-        var a={action:"vehicle_makes", car_year:cyear};
-        get_makes(a);
+        var a = {
+            text : 'make',
+            xdata : {
+                action : "vehicle_makes",
+                data : cyear
+            },
+            result_id : '#id_vehicle_make'
 
-		//alert(car_year);
+        };
+        get_car_data(a);
+	});
+
+    /* Makes => Models */
+    jQuery('#id_vehicle_make').change(function() {
+        //take make and return models
+		cmake = jQuery('#id_vehicle_make').val();
+        var a = {
+            text : 'model',
+            xdata : {
+                action : "vehicle_models",
+                data : cmake
+            },
+            result_id : '#id_vehicle_model'
+
+        };
+        get_car_data(a);
+	});
+
+    /* Models => Trim (if any) */
+    jQuery('#id_vehicle_model').change(function() {
+
+		cmodel = jQuery('#id_vehicle_model').val();
+        var a = {
+            text : 'trim',
+            xdata : {
+                action : "vehicle_trims",
+                data : cmodel
+            },
+            result_id : '#id_vehicle_trim'
+
+        };
+        get_car_data(a);
 	});
 
 
 
-    //GET MAKES BASED ON YEAR
-	function get_makes(obj) {
-		//get selected car values
-		car_year = jQuery('#id_vehicle_year').val();
+    /*
+    * get_car_data(obj)
+    *
+    * Main Workhorse Function for retrieving the info, via AJAX,
+    * to update Select elements with filtered data
+    * 
+     */
+	function get_car_data(obj) {
+        var resultType = 'car_' + obj.text;
+        var topOptionText = ucwords(obj.text);
 
 		MTV.do_ajax(
 			// global javascript variable
 			'/ajax_form_data/',
-			obj,
+			obj.xdata,
 			function( response ) {
-                alert(response.action)
+                //if(debug) alert(response.length);
+                var listItems= "<option value=''>-- Select a " + topOptionText + " --</option>";
+				for (var i = 1; i < response.length; i++){
+					listItems+= "<option value='" + response[i][resultType] + "'>" + response[i][resultType] + "</option>";
+				}
+				jQuery(obj.result_id).html(listItems);
+
 			},
             function(error) {
                 alert('error')
             }
 		);
 	}
+
+    /*
+    * Radio Button // Open Sub Info
+     */
+    $(".radio_group_wrapper").each(function() {
+
+        var subdiv = $(this).children('.subinfo');
+        
+        //does this group/wrapper have a '.subinfo' div? if so...
+        if(subdiv.length) {
+            //get the trimmed id...
+            var radioID = $(this).attr('id');
+            var radioName = radioID.replace(/id_/i, '');
+            radioName = radioName.replace(/_wrapper/i, '');
+            if(debug) console.log(radioName);
+
+            $('input[name=' + radioName + ']').change(function() {
+                  if($(this).val() == 'Yes') {
+                    //open subdiv
+                    $(subdiv).show();
+                  } else {
+                      //close the subdiv
+                      $(subdiv).hide();
+                  }
+            });
+        }
+
+    });
+
+    /* Utility to capitalize words, much like ucwords() in PHP */
+    function ucwords(str) {
+        return (str + '').replace(/^([a-z])|[\s_]+([a-z])/g, function ($1) {
+            return $1.toUpperCase();
+        })
+    };
 	
 	
 } );

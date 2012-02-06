@@ -3,11 +3,13 @@
 namespace hitfigure\views;
 use hitfigure\models\HitFigure;
 
+
+
 function how_it_works() {
 
 	global $wpdb;
-	$tbl = $wpdb->prefix . "wtmod_cardb";
-	
+    $tbl = $wpdb->prefix . "wtmod_cardb";
+
 	$states = array('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'Armed Forces Americas', 'Armed Forces Europe', 'Armed Forces Pacific');
 	
 	
@@ -23,7 +25,7 @@ function how_it_works() {
 		'required'=>True
 	));
 
-    $s->add_option('opt', array('text'=> '-- Select A Year --'));
+    $s->add_option('opt', array('text'=> '-- Select a Year --'));
 	
 	$order = 'DESC';
 	$years = $wpdb->get_results("select distinct car_year from $tbl order by car_year $order");
@@ -44,10 +46,10 @@ function how_it_works() {
 		'required'=>True
 	));
 
-    $s->add_option('opt',array('text'=> '-- Select A Make --'));
+    $s->add_option('opt',array('text'=> '-- Select a Make --'));
 
 	$order = 'ASC';
-	$makes = $wpdb->get_results("select distinct car_make from $tbl order by car_make $order");
+	$makes = get_car_makes();
 	foreach($makes as $make) {
 		$s->add_option('opt',array('text'=>$make->car_make,'value'=> $make->car_make));
 	}
@@ -66,7 +68,7 @@ function how_it_works() {
 
 	$order = 'ASC';
 	$models = $wpdb->get_results("select distinct car_model from $tbl order by car_model $order limit 100");
-	$s->add_option('opt',array('text'=>'-- Select A Model --'));
+	$s->add_option('opt',array('text'=>'-- Select a Model --'));
     foreach($models as $model) {
 		$s->add_option('opt',array('text'=>$model->car_model,'value'=> $model->car_model));
 	}
@@ -79,7 +81,7 @@ function how_it_works() {
 		'id' => 'id_vehicle_trim',
 		'name' =>'vehicle_trim',
 		'text' =>'Trim',
-		'required'=>True
+		'required'=>False
 	));
 
 	$s->add_option('opt',array('text'=>'-- Select A Trim --'));
@@ -94,7 +96,7 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$s->add_option('opt',array('text'=>'-- Select a Transmission'));
+	$s->add_option('opt',array('text'=>'-- Select a Transmission --'));
     $s->add_option('opt',array('text'=>'Automatic', 'value' => 'Automatic'));
     $s->add_option('opt',array('text'=>'Manual', 'value' => 'Manual'));
 	$f->add($s);
@@ -270,7 +272,7 @@ function how_it_works() {
 	$s->setProperties(array(
 		'id' =>'id_vehicle_interior_condition',
 		'name' =>'vehicle_interior_condition',
-		'text' =>'Transmission',
+		'text' =>'Interior Condition',
 		'required'=>True
 	));
 
@@ -497,28 +499,87 @@ function how_it_works() {
 function ajax_form_data($request) {
 
     $post_data = json_decode(str_replace("\\", "", $_POST['data']));
-    /*
-     foreach($posts_data as $key => $value) {
-        $txt .= $key . "= " . $value . "\n";
+    $action = $post_data->action;
+    $xdata = $post_data->data;
+    switch($action) {
+        case 'vehicle_makes':
+            $data = get_car_makes($xdata, 'ASC');
+            break;
+        case 'vehicle_models':
+            $data = get_car_models($xdata, 'ASC');
+            break;
+        case 'vehicle_trims':
+            $data = get_car_trim($xdata, 'ASC');
+            break;
     }
-    */
-	/*
-    $time = date("Y-d-m",time());
-    $fp = fopen('/Users/natxty/Documents/production_sites/hitfigure/_log/' . $time . '_log.txt', 'a');
-    fwrite($fp, $post_data."\n");
-    fclose($fp);
-	*/
-    // do something with my data
-    //$return_data = json_encode($posts_data);
-    
-    $success = true;
 
-    if ($success)
-      \mtv\shortcuts\display_json($post_data);
-        //echo '{ "response" : "here" }';
+    if ($data)
+      \mtv\shortcuts\display_json($data);
     else
-        throw new \mtv\http\AjaxHttp500("Something bad happened.");
+        return $post_data;
 
+      //throw new \mtv\http\AjaxHttp500("Something bad happened.");
+
+}
+
+function get_car_makes($car_year = null, $order = 'DESC') {
+    global $wpdb;
+    $tbl = $wpdb->prefix . "wtmod_cardb";
+    
+    //get all makes
+    $query = "SELECT DISTINCT car_make FROM $tbl ";
+    if($car_year) {
+       $query .= "WHERE car_year = " . $car_year . " ";
+    }
+    $query .= "ORDER BY car_make $order";
+
+	$makes = $wpdb->get_results($query);
+
+    if($wpdb->num_rows > 0) {
+        return $makes;
+    } else {
+        return false;
+    }
+
+}
+
+function get_car_models($car_make = null, $order = 'DESC') {
+    global $wpdb;
+    $tbl = $wpdb->prefix . "wtmod_cardb";
+
+    //get all makes
+    $query = "SELECT DISTINCT car_model FROM $tbl ";
+    if($car_make) {
+       $query .= "WHERE car_make = '" . $car_make . "' ";
+    }
+    $query .= "ORDER BY car_model $order";
+
+	$models = $wpdb->get_results($query);
+
+    if($wpdb->num_rows > 0) {
+        return $models;
+    } else {
+        return false;
+    }
+}
+
+function get_car_trim($car_model = null, $order = 'DESC') {
+    global $wpdb;
+    $tbl = $wpdb->prefix . "wtmod_cardb";
+    //get all makes
+    $query = "SELECT DISTINCT car_trim FROM $tbl ";
+    if($car_model) {
+       $query .= "WHERE car_model = '" . $car_model . "' ";
+    }
+    $query .= "ORDER BY car_trim $order";
+
+	$trim = $wpdb->get_results($query);
+
+    if($wpdb->num_rows > 0) {
+        return $trim;
+    } else {
+        return false;
+    }
 }
 
 
