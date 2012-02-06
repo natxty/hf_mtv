@@ -48,6 +48,33 @@ function dashboard( $request ) {
 	//print_r($existing_attachments);
 	
 	
+	$f = new \FormHelper('form');
+	$f->method = 'POST';
+	$f->enctype = 'multipart/form-data';
+	
+	$i = new \FileInput('myfileinput');
+	$i->setProperties(array(
+		'name'=>'myfileinput'
+	));
+	$f->add($i);
+	
+	
+	$b = new \Button('submit');
+	$b->setProperties(array(
+		'name'=>'submit',
+		'text'=>'Submit'
+	));
+	$f->add($b);
+	
+	if (isset($_REQUEST['submit'])) {
+		$f->applyUserInput(True);
+		var_dump($i->save());
+	} else {
+		echo $f->render();
+	}
+	
+	
+	
 	
 }
 

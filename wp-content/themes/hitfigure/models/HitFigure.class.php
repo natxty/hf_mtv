@@ -39,6 +39,8 @@ class HitFigure {
 		$user = UserCollection::get_current();
 		$roles = $user->roles;
 		
+		print_r($roles);
+		
 		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
 			$this->admin = new Admin();
 		} elseif ( in_array('manufacturer', $roles) ) {
