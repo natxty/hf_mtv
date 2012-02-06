@@ -11,6 +11,8 @@ if ( function_exists('mtv\register_app') ) {
 add_role( 'hitfigure', 'HitFigure', array( 'manage_manufacturers', 'manage_dealers', 'bid' ) );
 add_role( 'manufacturer', 'Manufacturer', array( 'manage_dealers', 'bid' ) );
 add_role( 'dealer', 'Dealer', array( 'bid' ) );
+add_role( 'salesperson', 'Sales Person', array( 'bid' ) );
+add_role( 'accountant', 'Accountant', array( ) );
 
 // Custom Status 
 // -- this seems impossible, get_post_statuses() seems to only choose a limited number, but I don't know where it is called...
@@ -55,35 +57,46 @@ require_once( dirname(__FILE__) . '/includes/Mustache.php' );
 
 global $mustache;
 global $mustache_partials;
+global $mustache_templates;
 
 function init_mustache() {
 	global $mustache;
 	global $mustache_partials;
+	global $mustache_templates;
 
-	$mustache_partials = get_mustache_partials();	
-	$mustache = new Mustache(null, null, $mustache_partials);
+	$mustache_partials 		= get_mustache_files('partials');
+	$mustache_templates	 	= get_mustache_files('templates');
+	
+	//print_r($mustache_templates);
+	
+	$mustache 				= new Mustache(null, null, $mustache_partials);
 }
 
-function get_mustache_partials() {
-	$dir = __DIR__.'/templates/partials/';
+function get_mustache_files($type) {
+	if ($type == 'partials') {
+		$dir = __DIR__.'/templates/partials/';
+	} else {
+		$dir = __DIR__.'/templates/';
+	}
 	$templates_files = scandir($dir);
-	$partials = array();
+	$files = array();
 	foreach ($templates_files as $file) {
 		$tag_name = str_replace('.mustache', '', $file);
 		if ( $tag_name !== $file ) {
 			$template = $dir.$file;
 			if (file_exists($template))
-				$partials [ $tag_name ] = file_get_contents($template);
+				$files [ $tag_name ] = file_get_contents($template);
 		}
 	}
-	return $partials;
+	return $files;
 }
 
 function display_mustache_template($name,$vars=array(),$echo=True) {
-	$mustache = new Mustache(null, null, get_mustache_partials());
-	$template = __DIR__.'/templates/'.$name.'.mustache';
-	if (file_exists($template))
-		$s = $mustache->render( file_get_contents($template), $vars);
+	global $mustache_partials, $mustache_templates;
+		
+	$mustache = new Mustache(null, null, $mustache_partials);
+	if (array_key_exists($name, $mustache_templates))
+		$s = $mustache->render( $mustache_templates[$name], $vars);
 	if ($echo)
 		echo $s;
 		

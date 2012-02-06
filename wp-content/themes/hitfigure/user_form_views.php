@@ -15,7 +15,18 @@ function how_it_works() {
 	
 	$f = new \FormHelper('submit_vehicle');
 	$f->method = 'POST';
-	
+    $f->enctype = 'multipart/form-data';
+
+    /* VIN */
+    $s = new \Input('vehicle_vin');
+    $s->setProperties(array(
+		'id' => 'id_vehicle_vin',
+		'name' =>'vehicle_vin',
+		'text' =>'VIN',
+		'required'=>False
+	));
+    $f->add($s);
+
 	/* Vehicle Year */
 	$s = new \Select('vehicle_year');
 	$s->setProperties(array(
@@ -67,7 +78,8 @@ function how_it_works() {
 	
 
 	$order = 'ASC';
-	$models = $wpdb->get_results("select distinct car_model from $tbl order by car_model $order limit 100");
+	$models = $wpdb->get_results("select distinct car_model from $tbl order by car_model $order");
+
 	$s->add_option('opt',array('text'=>'-- Select a Model --'));
     foreach($models as $model) {
 		$s->add_option('opt',array('text'=>$model->car_model,'value'=> $model->car_model));
@@ -472,10 +484,52 @@ function how_it_works() {
 
 	if ( isset($_REQUEST['confirm']) ) { 
 		$f->applyUserInput(True);
-		if (!$f->validate()) {	
+		if ($f->validate()) {
 			// Unset anything private here, but our validation_func's should print errors etc.
+               echo "failed";
 		} else {
 			// Do something on success...
+            /* build our prelim form and test */
+            echo "succeeeded";
+            extract($_REQUEST);
+            
+            $args = array(
+                'vehicle_vin' => 'vehicle_vin',
+                'vehicle_year'=> 'vehicle_year',
+                'vehicle_make'=> 'vehicle_make',
+                'vehicle_model'=> 'vehicle_model',
+                'vehicle_mileage'=> 'vehicle_mileage',
+                'vehicle_trim'=> 'vehicle_trim',
+                'vehicle_transmission'=> 'vehicle_transmission',
+                'vehicle_exteriorcolor'=> 'vehicle_exterior_color',
+                'vehicle_interiorcolor'=> 'vehicle_interior_color',
+                'vehicle_accidents'=> 'vehicle_known_accidents',
+                'vehicle_accidents_explain'=> 'vehicle_accidents_explain',
+                'vehicle_tires'=> 'vehicle_tires_sixty_percent',
+                'vehicle_paintworkperformed'=> 'vehicle_paintwork_performed',
+                'vehicle_paintworkperformed_explain'=> 'vehicle_paintwork_performed_explained',
+                'vehicle_paintworkneeded'=> 'vehicle_paintwork_needed',
+                'vehicle_paintworkneeded_explain'=> 'vehicle_paintwork_needed_explain',
+                'vehicle_smoker'=> 'vehicle_smoker',
+                'vehicle_interiorcondition'=> 'vehicle_interior_condition',
+                'vehicle_overalldesc'=> 'vehicle_overall_condition',
+                'vehicle_titleowner'=> 'vehicle_title_owner',
+                'vehicle_replacingifsold'=> 'vehicle_replacing_if_sold',
+                'seller_firstname'=> 'vehicle_first_name',
+                'seller_lastname'=> 'vehicle_last_name',
+                'seller_email'=> 'vehicle_email',
+                'seller_phone'=> 'vehicle_phone',
+                'seller_address1'=> 'vehicle_address1',
+                'seller_address2'=> 'vehicle_address2',
+                'seller_city'=> 'vehicle_city',
+                'seller_state'=> 'vehicle_state',
+                'seller_zipcode'=> 'vehicle_zipcode'
+            );
+
+            //get the data in!
+            $hitfigure = HitFigure::getInstance();
+            $saving = $hitfigure->new_vehicle($args);
+
 		}
 	}
 

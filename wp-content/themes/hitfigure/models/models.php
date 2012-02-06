@@ -94,7 +94,7 @@ class Vehicle extends Post {
 	}
 	
 	public function add_attachments($attachments) {
-		// Attachements should be an array of VehicleAttachments.
+		// Attachments should be an array of VehicleAttachments.
 		// They should be in the order they should appear.
 		
 		$post_id = $this->id;
@@ -190,10 +190,21 @@ class Vehicle extends Post {
 	public function seller_new_bid_email($bid) {
 		// Send off an email to the seller
 		$vars = array('time_left'=>$this->time_left()) + $this->post_meta + $bid->post_meta;
+		$vars['amount'] = money_format('$%i', $vars['amount']);
+		
 		$message = display_mustache_template('sellernewbid', $vars, False);
 		
 		$hitfigure = HitFigure::getInstance();
-		$hitfigure->sent_email("New Bid on your vehicle!", $message, $this->post_meta['seller_email']);
+		$hitfigure->send_email("New Bid on your vehicle!", $message, $this->post_meta['seller_email']);
+	}
+	
+	public function seller_won_bid_email($client) {
+		$vars = $client->get_vars() + $this->post_meta;
+		
+		$message = display_mustache_template('sellerwonbid', $vars, False);
+
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->send_email("Bidding has closed on your vehicle!", $message, $this->post_meta['seller_email']);
 	}
 	
 }
@@ -234,7 +245,7 @@ class AlertCollection extends PostCollection {
         'paged' => '1'
     );
     
-    public function new_alert($alert_type, $user_id = Null) {
+    public function new_alert($alert_type, $user_id = Null, $vehicle_id = Null) {
     	// Add a new alert
     	
     	$hitfigure = HitFigure::getInstance();
@@ -245,7 +256,7 @@ class AlertCollection extends PostCollection {
  
     	/* Choose our Alert subclass depending on type */
     	
-    	$class_name = 'Alert'.ucfirst($type);
+    	$class_name = 'hitfigure\models\Alert'.ucfirst($alert_type);
     	
     	if (!class_exists($class_name)) {
     		// No class matching this type
@@ -253,12 +264,17 @@ class AlertCollection extends PostCollection {
     	}
     	
     	$args = array(
-    		'user_id' => $user_id
+    		'user_id' 		=> $user_id
     	);
     	
-    	$class = new $class_name($args);
-    	$class->send_email();
+    	if ($vehicle_id) {
+    		$args['vehicle_id'] = $vehicle_id;
+    	}
+    	
+    	$class = new $class_name($args);   	
     	$class->save();
+    	
+    	$class->send_email();
     
     }
     
@@ -288,10 +304,15 @@ class Alert extends Post {
 	public function save() {
 		
 		if ( isset($this->attributes['user_id']) ) {
-			$this->post_meta['user_id'] = $this->attributes['user_id'];
+			$this->attributes['post_meta']['user_id'] = $this->attributes['user_id'];
 			unset($this->attributes['user_id']);
 		}
 		
+		if ( isset($this->attributes['vehicle_id']) ) {
+			$this->attributes['post_meta']['vehicle_id'] = $this->attributes['vehicle_id'];
+			unset($this->attributes['vehicle_id']);
+		}
+				
 		parent::save();
 	}
 	
@@ -326,9 +347,9 @@ class Alert extends Post {
 	public function send_email() {
 		// Get the content and send it in an email
 		// with appropriate headers etc.
-		
 		$client = new Client(array('id'=>$this->post_meta['user_id']));
 		$client->fetch();
+		
 		$ok = $client->can_recieve_alert_for($this->post_meta['alert_type']);
 		
 		if (!$ok) {
@@ -336,7 +357,7 @@ class Alert extends Post {
 		}
 		
 		$message 	= $this->post_content;
-		$to 		= $client->user_email;
+		$to 		= $client->data->user_email;
 		$subject	= $this->post_title;
 		
 		$hitfigure = HitFigure::getInstance();
@@ -352,12 +373,25 @@ class Alert extends Post {
 	
 }
 
+class AlertVehicle extends Alert {
+
+	public function save() {
+		$vehicle_id = $this->attributes['vehicle_id'];
+		$vehicle = VehicleCollection::get_by_id($vehicle_id);
+		$vehicle_name = $vehicle->post_meta['vehicle_year'] . ' ' . $vehicle->post_meta['vehicle_make'] . ' ' . $vehicle->post_meta['vehicle_model'];
+		$this->attributes['post_title'] .= ' '.$vehicle_name;
+
+		parent::save();
+	}
+
+}
 
 
-class AlertWon extends Alert {
+
+class AlertWon extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
-		'post_title'		=> 'Won! %s',		
+		'post_title'		=> 'Won!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
 			'alert_type'		=> 'won',
@@ -365,14 +399,16 @@ class AlertWon extends Alert {
 			'alert_dismissed'	=> false
 		)
 	);
+	
+
 }
 
 
 
-class AlertOutbid extends Alert {
+class AlertOutbid extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
-		'post_title'		=> 'Outbid! %s',		
+		'post_title'		=> 'Outbid!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
 			'alert_type'		=> 'outbid',
@@ -384,10 +420,10 @@ class AlertOutbid extends Alert {
 
 
 
-class AlertNewbid extends Alert {
+class AlertNewbid extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
-		'post_title'		=> 'New bid! %s',		
+		'post_title'		=> 'New bid!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
 			'alert_type'		=> 'newbid',
@@ -674,6 +710,56 @@ class Dealer extends Client {
 			// Set the role for this user...
 			$u = new WP_User( $r );
 			$u->set_role( 'dealer' );	
+		}
+		return $r;
+	}
+}
+
+
+
+/* Sales Person Model */
+
+class SalesPersonCollection extends ClientCollection {
+	public static $model 	= "hitfigure\models\SalesPerson";
+	public static $role 	= "salesperson";	
+}
+
+
+
+class SalesPerson extends Client {
+	public $role = 'salesperson';
+	
+	public function register() {
+		$r = parent::register();
+		if ( !is_wp_error($r) ) {
+			// Set the role for this user...
+			$u = new WP_User( $r );
+			$u->set_role( 'salesperson' );	
+		}
+		return $r;
+	}
+}
+
+
+
+/* Accountant Model */
+
+class AccountantCollection extends ClientCollection {
+	public static $model 	= "hitfigure\models\Accountant";
+	public static $role 	= "accountant";	
+}
+
+
+
+class Accountant extends Client {
+	public $role = 'Accountant';
+	
+	public function register() {
+		$r = parent::register();
+		if ( !is_wp_error($r) ) {
+			// Set the role for this user...
+			$u = new WP_User( $r );
+			$u->set_role( 'accountant' );	
 		}
 		return $r;
 	}

@@ -40,7 +40,8 @@ class Admin {
 
 
 
-	protected function edit_client_vars( $client ) {		
+	protected function edit_client_vars( $client ) {
+		$type = $client->roles[0];
 		$form = $this->update_client( $type, $client );
 		$adminvars = array('form'=>$form);
 		
@@ -57,6 +58,8 @@ class Admin {
 	protected function update_client( $type, $client=Null ) {
 		// Create or Update a Client
 		
+		$dealer_employees = array('salesperson', 'accountant');
+		
 		// If we're just updating a client we have it as an object already
 		$id = Null; // -- !$id is used to check if we are registering a new user or not		
 		if ($client) {
@@ -71,14 +74,111 @@ class Admin {
 			$f->action = '/admin/edit/'.$id;
 		}
 		
+		if ( !in_array($type, $dealer_employees) ) {
+			$this->add_business_name_input($f);
+		}
+		
+		$this->add_basic_info_inputs($f);
+		
+		if ( !in_array($type, $dealer_employees) ) {
+			$this->add_additional_info_inputs($f);		
+		}
+		
+		$this->add_account_inputs($f);
+		
+		$b = new \Button('submit');
+		$b->setProperties(array(
+			'name'	=> 'submit',
+			'text'	=> 'Submit'
+		));
+		$f->add($b);
+		
+		
+		
+		if ($id) { // Do some additional stuff if we're editing
+			$f->password->required = False;
+			$f->confirmpassword->required = False;
+			$f->user_login->required = False;
+			$f->user_login->readonly = True;
+		}
+		
+		
+		
+		if ( isset($_REQUEST['submit']) ) {
+			
+			$f->applyUserInput(True);
+			
+			if (!$f->validate()) {
+			
+				$f->password->value = '';
+				$f->confirmpassword->value = '';
+			
+			} else {
+				// Validation Success, do our post-form processing
+				$client = Null;
+				
+				if ( !in_array($type, $dealer_employees) ) {
+					$args = $this->get_new_client_form_args($f, $id);
+				} else {
+					$args = $this->get_new_client_form_args_dealer_employee($f, $id);
+				}
+							
+				switch($type) {
+					case 'manufacturer':
+						$client = new Manufacturer($args);
+						break;
+					case 'dealer':
+						$client = new Dealer($args);
+						break;
+					case 'salesperson':
+						$client = new SalesPerson($args);
+						break;
+					case 'accountant':
+						$client = new Accountant($args);
+						break;
+				}
+				
+				if ( !$id && is_wp_error($result = $client->register()) ) { // Register and check for errors
+					$f->password->value = '';
+					$f->confirmpassword->value = '';														
+				} else {
+					$client->save();
+					if (!$id) {
+						$url = get_bloginfo('wpurl').'/admin/edit/'.$client->id.'/?clientregistered='.ucfirst($type);
+						wp_redirect( $url, '302' );
+					}
+				}
+			}
+		} else {
+			
+			if ($id) { // Set our values to our client
+			
+				if ( !in_array($type, $dealer_employees) ) {
+					$this->set_edit_client_form_values($f, $client);
+				} else {
+					$this->set_edit_client_form_values_dealer_employee($f, $client);
+				}
+			}	
+		}	
+	
+		return $f->render();
+	}
+
+
+
+	protected function add_business_name_input($f) {
 		$i = new \Input('business_name');
 		$i->setProperties(array(
 			'name' =>'business_name',
 			'text' =>'Dealer Name',
 			'required'=>True
 		));
-		$f->add($i);
-		
+		$f->add($i);		
+	}
+	
+	
+	
+	protected function add_basic_info_inputs($f) {
 		$i = new \Input('first_name');
 		$i->setProperties(array(
 			'name' =>'first_name',
@@ -107,8 +207,12 @@ class Admin {
 		        return True;
 			}
 		));
-		$f->add($i);		
-		
+		$f->add($i);	
+	}
+	
+	
+	
+	protected function add_additional_info_inputs($f) {
 		$i = new \Input('phone');
 		$i->setProperties(array(
 			'name' =>'phone',
@@ -154,8 +258,11 @@ class Admin {
 			'required'=>True
 		));
 		$f->add($i);			
-		
-		
+	}
+	
+	
+	
+	protected function add_account_inputs($f) {
 		$i = new \Input('user_login');
 		$i->setProperties(array(
 			'name' =>'user_login',
@@ -194,89 +301,70 @@ class Admin {
 			}
 		));	
 		$f->add($i);	
-		
-		$b = new \Button('submit');
-		$b->setProperties(array(
-			'name'	=> 'submit',
-			'text'	=> 'Submit'
-		));
-		$f->add($b);
-		
-		
-		
-		if ($id) { // Do some additional stuff if we're editing
-			$f->password->required = False;
-			$f->confirmpassword->required = False;
-			$f->user_login->required = False;
-			$f->user_login->readonly = True;
-		}
-		
-		
-		
-		if ( isset($_REQUEST['submit']) ) {
-			$f->applyUserInput(True);
-			if (!$f->validate()) {
-				$f->password->value = '';
-				$f->confirmpassword->value = '';
-			} else {
-				// Validation Success, do our post-form processing
-				$client = Null;
-				
-				$args = array(
-					'id'				=>$id,
-					'business_name'		=>$f->business_name->value,
-					'first_name'		=>$f->first_name->value,
-					'last_name'			=>$f->last_name->value,
-					'user_email'		=>$f->user_email->value,
-					'phone'				=>$f->phone->value,
-					'address'			=>$f->address->value,
-					'address2'			=>$f->address2->value,
-					'city'				=>$f->city->value,
-					'state'				=>$f->state->value,
-					'zipcode'			=>$f->zipcode->value,
-					'user_login'		=>$f->user_login->value,
-					'user_pass'			=>$f->password->value,
-					'user_parent'		=>$this->user->id
-				);
-							
-				switch($type) {
-					case 'manufacturer':
-						$client = new Manufacturer($args);
-						break;
-					case 'dealer':
-						$client = new Dealer($args);
-						break;
-				}
-				
-				if ( !$id && is_wp_error($result = $client->register()) ) { // Register and check for errors
-					$f->password->value = '';
-					$f->confirmpassword->value = '';														
-				} else {
-					$client->save();
-					if (!$id) {
-						$url = get_bloginfo('wpurl').'/admin/edit/'.$client->id.'/?clientregistered='.ucfirst($type);
-						wp_redirect( $url, '302' );
-					}
-				}
-			}
-		} else {
-			
-			if ($id) { // Set our values to our client
-				$f->business_name->value 	= $client->business_name;
-				$f->first_name->value 		= $client->first_name;
-				$f->last_name->value		= $client->last_name;
-				$f->user_email->value		= $client->data->user_email;
-				$f->phone->value			= $client->phone;
-				$f->address->value			= $client->address;
-				$f->address2->value			= $client->address2;
-				$f->city->value				= $client->city;
-				$f->state->value			= $client->state;
-				$f->zipcode->value			= $client->zipcode;
-				$f->user_login->value		= $client->data->user_login;
-			}	
-		}	
+	}
 	
-		return $f->render();
+	
+	
+	protected function get_new_client_form_args($f, $id) {
+		$args = array(
+			'id'				=>$id,
+			'business_name'		=>$f->business_name->value,
+			'first_name'		=>$f->first_name->value,
+			'last_name'			=>$f->last_name->value,
+			'user_email'		=>$f->user_email->value,
+			'phone'				=>$f->phone->value,
+			'address'			=>$f->address->value,
+			'address2'			=>$f->address2->value,
+			'city'				=>$f->city->value,
+			'state'				=>$f->state->value,
+			'zipcode'			=>$f->zipcode->value,
+			'user_login'		=>$f->user_login->value,
+			'user_pass'			=>$f->password->value,
+			'user_parent'		=>$this->user->id
+		);	
+		
+		return $args;
+	}
+	
+	
+	
+	protected function set_edit_client_form_values($f, $client) {
+		$f->business_name->value 	= $client->business_name;
+		$f->first_name->value 		= $client->first_name;
+		$f->last_name->value		= $client->last_name;
+		$f->user_email->value		= $client->data->user_email;
+		$f->phone->value			= $client->phone;
+		$f->address->value			= $client->address;
+		$f->address2->value			= $client->address2;
+		$f->city->value				= $client->city;
+		$f->state->value			= $client->state;
+		$f->zipcode->value			= $client->zipcode;
+		$f->user_login->value		= $client->data->user_login;
+	}
+
+
+
+	protected function get_new_client_form_args_dealer_employee($f, $id) {
+		$args = array(
+			'id'				=>$id,
+			'first_name'		=>$f->first_name->value,
+			'last_name'			=>$f->last_name->value,
+			'user_email'		=>$f->user_email->value,
+			'user_login'		=>$f->user_login->value,
+			'user_pass'			=>$f->password->value,
+			'user_parent'		=>$this->user->id
+		);	
+		
+		return $args;
+	}
+	
+	
+	
+	protected function set_edit_client_form_values_dealer_employee($f, $client) {
+		$f->first_name->value 		= $client->first_name;
+		$f->last_name->value		= $client->last_name;
+		$f->user_email->value		= $client->data->user_email;
+		$f->user_login->value		= $client->data->user_login;
 	}
 
 
@@ -330,6 +418,10 @@ class Admin {
 			$json = DealerCollection::get_json_client_data($args);
 		} elseif ($type == 'manufacturer') {
 			$json = ManufacturerCollection::get_json_client_data($args);
+		} elseif ($type == 'salesperson') {
+			$json = SalesPersonCollection::get_json_client_data($args);
+		} elseif ($type == 'accountant') {
+			$json = AccountantCollection::get_json_client_data($args);
 		}
 
 		return array('aaData'=>$json);	
@@ -370,7 +462,7 @@ class Admin {
 		);
 	
 		// Here we have to make sure that the Vehicle exists...
-		$vehicle = VehicleCollection::getVehicleByID($id);
+		$vehicle = VehicleCollection::get_by_id($id);
 		
 		if (!$vehicle) {
 			$bidvars['lead_found'] = False;
@@ -504,5 +596,13 @@ class Admin {
 	}
 
 
-	
+	public function get_admin_vars($vars = array()) {
+		$vars['current_user_id'] 		= $this->user->id;
+		$vars['hide_salesperson'] 		= True;
+		$vars['hide_add_salesperson'] 	= True;
+		$vars['hide_accountant'] 		= True;
+		$vars['hide_add_accountant'] 	= True;
+		
+		return $vars;
+	}
 }

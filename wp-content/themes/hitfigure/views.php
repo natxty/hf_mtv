@@ -92,7 +92,9 @@ function dashboard( $request ) {
 
 function view_leads( $request ) {
 	// View Leads
-	$hitfigure = HitFigure::getInstance();	
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+		
 	$vars = $hitfigure->template_vars();
 	display_mustache_template('viewleads', $vars);
 	
@@ -102,6 +104,8 @@ function view_leads( $request ) {
 function ajax_lead_data( $request ) {
 	// Return Ajax data to datatables
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
 	$leaddata = $hitfigure->admin->get_lead_data();	
  	echo json_encode($leaddata);
 }
@@ -113,6 +117,7 @@ function lead( $request ) {
 	$id = $request['id']; // Lead (vehicle) id
 	
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 	
 	$adminvars = $hitfigure->admin->view_lead($id);	
 	
@@ -127,6 +132,7 @@ function edit_client( $request ) {
 	$id 	= $request['id']; // Client ID
 	
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 	
 	$adminvars = $hitfigure->admin->edit_client($id);	
 	
@@ -138,9 +144,10 @@ function edit_client( $request ) {
 
 function new_client( $request ) {
 	// New Client
-	$type		= $request['type']; // manufacturer / dealer
+	$type		= $request['type']; // manufacturer / dealer / salesperson | accountant
 	
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 
 	$adminvars = $hitfigure->admin->register_client($type);	
 
@@ -152,9 +159,10 @@ function new_client( $request ) {
 
 function view_clients( $request ) {
 	// View Clients
-	$type	= $request['type']; // manufacturer / dealer
+	$type	= $request['type']; // manufacturer / dealer / salesperson | accountant
 	
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 	
 	$vars = $hitfigure->template_vars(array('type'=>$type)); 
 	display_mustache_template('viewclients', $vars);
@@ -167,6 +175,7 @@ function ajax_client_data( $request ) {
 	$type	= $request['type']; // manufacturer / dealer
 	
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 	
 	$clientdata = $hitfigure->admin->get_client_data($type);
 
@@ -186,6 +195,7 @@ function bid( $request ) {
 	$id 	= $request['id']; // Lead (vehicle) ID
 
 	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 
 	$adminvars = $hitfigure->admin->bid($id);	
 

@@ -37,9 +37,24 @@ class HitFigure {
 
 
 	
+	public function is_logged_in() {
+		if (!$this->admin) {
+			$url = "http://" . $_SERVER['HTTP_HOST']  . $_SERVER['REQUEST_URI'];
+			$redirect = wp_login_url( $url );
+			wp_redirect( $redirect, '302' );
+			exit;
+		}
+	}
+	
+
+
 	private function instantiate_admin() {
 		$user = UserCollection::get_current();
 		$roles = $user->roles;
+		
+		if (!$roles) { // Probably just a vistor on the front end...
+			return;
+		}
 				
 		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
 			$this->admin = new Admin();
@@ -47,6 +62,10 @@ class HitFigure {
 			$this->admin = new ManufacturerAdmin();
 		} elseif ( in_array('dealer', $roles) ) {
 			$this->admin = new DealerAdmin();
+		} elseif ( in_array('salesperson', $roles) ) {
+			$this->admin = new SalesPersonAdmin();
+		} elseif ( in_array('accountant', $roles) ) {
+			$this->admin = new AccountantAdmin();
 		}
 		
 	}
@@ -54,6 +73,9 @@ class HitFigure {
 	
 	
 	public function template_vars($vars = array()) {
+		if ( $this->admin ) {
+			$vars = $vars + $this->admin->get_admin_vars();
+		}
 		return $this->get_wp_data() + $this->get_header_vars() + $this->get_footer_vars() + $vars;
 	}
 

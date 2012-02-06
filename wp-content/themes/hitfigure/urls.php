@@ -4,8 +4,8 @@ $url_patterns = array(
 	'/admin\/dashboard/' 									=> 'hitfigure\views\dashboard',
 	'/admin\/leads/'										=> 'hitfigure\views\view_leads',
 	'/admin\/lead\/(?P<id>[\d]+)/'							=> 'hitfigure\views\lead',
-	'/admin\/view\/(?P<type>manufacturer|dealer)/'			=> 'hitfigure\views\view_clients',
-	'/admin\/new\/(?P<type>manufacturer|dealer)/'			=> 'hitfigure\views\new_client',
+	'/admin\/view\/(?P<type>manufacturer|dealer|salesperson|accountant)/'			=> 'hitfigure\views\view_clients',
+	'/admin\/new\/(?P<type>manufacturer|dealer|salesperson|accountant)/'			=> 'hitfigure\views\new_client',
 	'/admin\/edit\/(?P<id>[\d]+)/'							=> 'hitfigure\views\edit_client',
 	'/admin\/alerts/'										=> 'hitfigure\views\view_alerts',
 	'/admin\/bid\/(?P<id>[\d]+)/'							=> 'hitfigure\views\bid',
@@ -15,7 +15,7 @@ $url_patterns = array(
 	'/homepage/'											=> 'hitfigure\views\homepage',
 	'/colin/'												=> 'hitfigure\views\colin',
 	'/ajax_view_leads/' 									=> 'hitfigure\views\ajax_lead_data',
-	'/ajax_view_clients\/(?P<type>manufacturer|dealer)/'	=> 'hitfigure\views\ajax_client_data',
+	'/ajax_view_clients\/(?P<type>manufacturer|dealer|salesperson|accountant)/'	=> 'hitfigure\views\ajax_client_data',
 	'/(?P<slug>[\w-\/]+)\/?$/' 								=> 'hitfigure\views\page'
 );
 

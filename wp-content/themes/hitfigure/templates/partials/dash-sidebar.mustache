@@ -1,14 +1,53 @@
 
 				<div class="sidebar">
 					<ul class="dashboard-side-menu">
-						<li><a href="../dashboard/">Dashboard</a></li>
-						<li class="current"><a href="">View Leads</a></li>
-						<li><a href="../view-manufacturers/">View / Edit Manufacturers</a></li>
-						<li><a href="../create-a-manufacturer/">Add a Manufacturer</a></li>
-						<li><a href="../manufacturer-reports/">Reports</a></li>
-						<li><a href="../view-dealers/">View / Edit Dealers</a></li>
-						<li><a href="../create-a-dealer/">Add a Dealer</a></li>
-						<li><a href="../profile/">Edit Account Profile</a></li>
+						{{^hide_dashboard}}
+						<li><a href="/admin/dashboard">Dashboard</a></li>
+						{{/hide_dashboard}}
+						
+						{{^hide_leads}}
+						<li class="current"><a href="/admin/leads">View Leads</a></li>
+						{{/hide_leads}}
+						
+						{{^hide_manufacturers}}
+						<li><a href="/admin/view/manufacturer">View / Edit Manufacturers</a></li>
+						{{/hide_manufacturers}}
+						
+						{{^hide_add_manufacturer}}
+						<li><a href="/admin/new/manufacturer">Add a Manufacturer</a></li>
+						{{/hide_add_manufacturer}}
+						
+						{{^hide_reports}}
+						<li><a href="/admin/reports">Reports</a></li>
+						{{/hide_reports}}
+						
+						{{^hide_dealers}}
+						<li><a href="/admin/view/dealer">View / Edit Dealers</a></li>
+						{{/hide_dealers}}
+						
+						{{^hide_add_dealer}}
+						<li><a href="/admin/new/dealer">Add a Dealer</a></li>
+						{{/hide_add_dealer}}
+
+						{{^hide_salesperson}}
+						<li><a href="/admin/view/salesperson">View / Edit Sales People</a></li>
+						{{/hide_salesperson}}
+						
+						{{^hide_add_salesperson}}
+						<li><a href="/admin/new/salesperson">Add a Sales Person</a></li>
+						{{/hide_add_salesperson}}
+
+						{{^hide_accountant}}
+						<li><a href="/admin/view/accountant">View / Edit Accountants</a></li>
+						{{/hide_accountant}}
+						
+						{{^hide_add_accountant}}
+						<li><a href="/admin/new/accountant">Add a Accountant</a></li>
+						{{/hide_add_accountant}}
+						
+						{{^hide_edit_account}}
+						<li><a href="/admin/edit/{{current_user_id}}">Edit Account Profile</a></li>
+						{{/hide_edit_account}}	
 					</ul>
 				<!-- close sidebar -->
 				</div>
