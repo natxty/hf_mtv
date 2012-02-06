@@ -413,6 +413,10 @@ class Admin {
 					// Bid confirmed... just display a confirmation message
 					$yourbidamount = $f->amount->value;
 					BidCollection::place($f->amount->value,$id, $vehicle->post_title);
+					
+					$hitfigure = HitFigure::getInstance();
+					$hitfigure->trigger_action('bid_placed');
+					
 					$bidvars['bid_placed'] = True;
 					$bidvars['yourbidamount'] = $yourbidamount;
 					$f = null;
@@ -495,6 +499,7 @@ class Admin {
 	
 		return $f;
 	}
-	
+
+
 	
 }

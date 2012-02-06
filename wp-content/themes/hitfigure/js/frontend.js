@@ -99,32 +99,27 @@ $(document).ready(function() {
 
     /* some nice formy functions */
     jQuery('#id_vehicle_year').change(function() {
-		get_makes();
-		car_year = jQuery('#id_vehicle_year').val();
+
+		cyear = jQuery('#id_vehicle_year').val();
+        var a={action:"vehicle_makes", car_year:cyear};
+        get_makes(a);
+
 		//alert(car_year);
 	});
 
 
 
     //GET MAKES BASED ON YEAR
-	function get_makes() {
+	function get_makes(obj) {
 		//get selected car values
 		car_year = jQuery('#id_vehicle_year').val();
 
 		MTV.do_ajax(
 			// global javascript variable
 			'/ajax_form_data/',
-			{
-				// here we declare the parameters to send along with the request
-				// this means the following action hooks will be fired:
-				// vehicle_models
-				action : 'vehicle_makes',
-
-				// other parameters can be added along with "action"
-				car_year : car_year
-			},
+			obj,
 			function( response ) {
-                alert(response);
+                alert(response.action)
 			},
             function(error) {
                 alert('error')

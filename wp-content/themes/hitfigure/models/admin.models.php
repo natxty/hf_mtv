@@ -31,9 +31,9 @@ class BasicAdmin extends Admin {
 		// Add our limiting filter
 		// This will have to be amended, actually, since manufacturers have a 
 		// greater range....
-		add_filter( 'posts_where', 'hitfigure\models\filter_where_lt_50miles' );
+		add_filter( 'posts_where', 'hitfigure\models\filter_where_registered_for_lead' );
 		$vars = parent::get_lead_data_vars();
-		remove_filter( 'posts_where', 'hitfigure\models\filter_where_lt_50miles' );
+		remove_filter( 'posts_where', 'hitfigure\models\filter_where_registered_for_lead' );
 		return $vars;
 	}
 	

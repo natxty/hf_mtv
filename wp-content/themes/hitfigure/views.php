@@ -38,7 +38,17 @@ function faqs( $request ) {
 
 
 function dashboard( $request ) {
-
+	//$attachment_meta = get_post_meta(7, '_attachments', True );
+	//print_r(unserialize(base64_decode($attachment_meta)));
+	
+	//print_r(attachments_get_attachments(7));
+	
+	//$existing_attachments = get_post_meta( 7, '_attachments', false );
+	
+	//print_r($existing_attachments);
+	
+	
+	
 }
 
 

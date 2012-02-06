@@ -63,13 +63,52 @@ class VehicleCollection extends PostCollection {
 		
 		return $vehicles_json;
 	}
-	
+		
 }
 
 
 
 class Vehicle extends Post {
 	public $defaults = array('post_type' => 'cpt-vehicle');
+	
+	public function save_dealers() {
+    	// Run this when we create a new vehicle
+    	$vehicle_id 		= $this->id;
+    	$vehicle_zipcode 	= $this->post_meta['seller_zipcode'];
+    	
+    	return $wpdb->get_results("CALL get_closestdealers($vehicle_id, $vehicle_zipcode)");  	
+	}
+	
+	public function get_dealers() {
+		// Get the dealers for the vehicle from wp_closestdealers
+		$vehicle_id = $this->id;
+		return $wpdb->get_results("SELECT * FROM wp_closestdealers WHERE vehicle_id = $vehicle_id");
+	}
+	
+	public function add_attachments($attachments) {
+		// Attachements should be an array of VehicleAttachments.
+		// They should be in the order they should appear.
+		
+		$post_id = $this->id;
+		delete_post_meta( $post_id, '_attachments' );
+		
+		foreach ($attachments as $i=>$attachment) {
+			$attachment_details = array (
+	            'id' => $attachment->id,
+	            'title' => $attachment->post_title,
+	            'caption' => $attachment->post_content,
+	            'order' => $i
+	        );
+	        
+			// serialize data and encode
+			$attachment_serialized = base64_encode( serialize( $attachment_details ) );
+
+			// add individual attachment
+			add_post_meta( $post_id, '_attachments', $attachment_serialized );	
+		}
+		
+		// And that's it... we should have already set the post_parent when we made the attachments		
+	}
 	
 	public function get_attachments() {
 		$_attachments = array();
@@ -83,11 +122,7 @@ class Vehicle extends Post {
 	}
 	
     public function save() {
-    	$geodata = $this->get_geodata();
-       	$this->attributes['post_meta']['lat'] = $geodata['lat'];
-    	$this->attributes['post_meta']['lng'] = $geodata['lng'];
-    	
-    	parent::save();
+       	parent::save();       	
     }	
 	
 	public function time_left($format="%d days %h hours %i minutes %s seconds") {
@@ -114,7 +149,7 @@ class Vehicle extends Post {
 		$json['vehicle_model'] 		= isset($this->post_meta['vehicle_model']) ? $this->post_meta['vehicle_model'] : '';
 		$json['vehicle_make'] 		= isset($this->post_meta['vehicle_make']) ? $this->post_meta['vehicle_make'] : '';
 		$json['vehicle_mileage'] 	= isset($this->post_meta['vehicle_mileage']) ? $this->post_meta['vehicle_mileage'] : '';
-		$json['time_left'] 			= $this->time_left('%h');
+		$json['time_left'] 			= $this->time_left('%d d %h hr %i mn');
 		$json['bid_status'] 		= $this->bid_status();
 		$json['bid_offers'] 		= $this->bid_offers() ? 'Yes' : 'No';
 		$json['view_vehicle']		= display_mustache_template('viewitemlink', array('url'=>'/admin/lead/'.$this->id, 'text'=>'View Vehicle'), False);
@@ -142,30 +177,7 @@ class Vehicle extends Post {
 		if ($status != -1) {
 			return True;
 		}
-	}
-	
-    public function get_geodata() {
-       	$fulladdress = 	$this->post_meta['seller_address1'].' ';
-       	$fulladdress .=	$this->post_meta['seller_address2'].' ';
-       	$fulladdress .=	$this->post_meta['seller_city'].' ';
-       	$fulladdress .=	$this->post_meta['seller_zipcode'].' ';
-       	$fulladdress .=	$this->post_meta['seller_state'];	
-       	
- 		$resp = wp_remote_get( "http://maps.googleapis.com/maps/api/geocode/json?address=".urlencode($fulladdress)."&sensor=false" );
-    	
-    	$lat = null;
-    	$lng = null;
-    	
-    	
-    	if ($resp['response']['message'] == 'OK') {
-    	 	$data = json_decode($resp['body']);	
-    		$lat = $data->results[0]->geometry->location->lat;
-    		$lng = $data->results[0]->geometry->location->lng;
-    	}
- 
-    	
-    	return array('lat'=>$lat, 'lng'=>$lng);
-    }	
+	}	
 	
 }
 
@@ -173,6 +185,13 @@ class Vehicle extends Post {
 /* Vechicle Image Attachment */
 
 class VehicleAttachment extends Attachment {
+
+	public function save() {
+		// Here we have to update the Attachments plugin meta...
+
+		parent::save();
+	}
+
 	public function parse( &$postdata ) { 
 		$ret = parent::parse($postdata);
 		
@@ -181,6 +200,8 @@ class VehicleAttachment extends Attachment {
 		
 		return $ret;
 	}
+	
+	
 }
 
 
@@ -195,12 +216,156 @@ class AlertCollection extends PostCollection {
         'order' => 'DESC',
         'paged' => '1'
     );
+    
+    public function new_alert($alert_type, $user_id = Null) {
+    	// Add a new alert
+    	
+    	$hitfigure = HitFigure::getInstance();
+    	
+    	if (!$user_id) { // Assume it's the current user
+    		$user_id = $hitfigure->admin->user->id;
+    	}
+ 
+    	/* Choose our Alert subclass depending on type */
+    	
+    	$class_name = 'Alert'.ucfirst($type);
+    	
+    	if (!class_exists($class_name)) {
+    		// No class matching this type
+    		return;
+    	}
+    	
+    	$args = array(
+    		'user_id' => $user_id
+    	);
+    	
+    	$class = new $class_name($args);
+    	$class->send_email();
+    	$class->save();
+    
+    }
+    
+    public function get_by_id( $id ) {
+		$alerts = self::filter(array('p'=>$id, 'posts_per_page'=>1));
+		if (!count($alerts)) {
+			return Null;
+		}
+		return $alerts->current();     
+    }
+    
+    public function dismiss_alert( $id ) {
+    	// Simple way to find an alert by id and dismiss it
+    	$alert = self::get_by_id($id);
+    	if ($alert) {
+    		$alert->fetch();
+    		$alert->dismiss();
+    	}
+    }
 }
 
 
 
 class Alert extends Post {
 	public $defaults = array('post_type' => 'cpt-alert');
+	
+	public function save() {
+		
+		if ( isset($this->attributes['user_id']) ) {
+			$this->post_meta['user_id'] = $this->attributes['user_id'];
+			unset($this->attributes['user_id']);
+		}
+		
+		parent::save();
+	}
+	
+	protected function render_content() {
+		// Get our Mustache template and render it
+		$template_name = 'alert'.$this->post_meta['alert_type'];
+		$vars = $this->get_vars();
+		
+		// Get our user information...
+		$client = new Client(array('id'=>$this->post_meta['user_id']));
+		$client_vars = $client->get_vars();
+		
+		$vars = $vars + $client_vars;
+		
+		$content = display_mustache_template($template_name, $vars);
+		$this->post_content = $content;
+	}
+	
+	public function get_vars() {
+		$vars = array(
+			'alert_title' 	=> $this->post_title,
+			'alert_content'	=> $this->post_content,
+			'alert_id'		=> $this->id
+		);	
+		// Add all our post_meta...
+		$vars = $vars + $this->post_meta;
+		
+		return $vars;
+	}
+	
+	public function send_email() {
+		// Get the content and send it in an email
+		// with appropriate headers etc.
+		
+		
+		
+		
+	}
+	
+	public function dismiss() {
+		// Set the alert_dismissed to true and save it
+		
+		$this->post_meta['alert_dismissed'] = True;
+		$this->save();
+	}
+	
+}
+
+
+
+class AlertWon extends Alert {
+	public $defaults = array(
+		'post_type' 		=> 'cpt-alert',
+		'post_title'		=> 'Won! %s',		
+		'post_meta'			=> array(
+			'post_content'		=> null,
+			'alert_type'		=> 'won',
+			'alert_status'		=> 'green',
+			'alert_dismissed'	=> false
+		)
+	);
+}
+
+
+
+class AlertOutbid extends Alert {
+	public $defaults = array(
+		'post_type' 		=> 'cpt-alert',
+		'post_title'		=> 'Outbid! %s',		
+		'post_meta'			=> array(
+			'post_content'		=> null,
+			'alert_type'		=> 'outbid',
+			'alert_status'		=> 'red',
+			'alert_dismissed'	=> false
+		)
+	);
+}
+
+
+
+class AlertNewbid extends Alert {
+	public $defaults = array(
+		'post_type' 		=> 'cpt-alert',
+		'post_title'		=> 'New bid! %s',		
+		'post_meta'			=> array(
+			'post_content'		=> null,
+			'alert_type'		=> 'newbid',
+			'alert_status'		=> 'blue',
+			'alert_dismissed'	=> false
+		)
+	);
 }
 
 
@@ -354,9 +519,7 @@ class Client extends User {
 		'city',			
 		'state',			
 		'zipcode',
-		'user_parent',
-		'lat',
-		'lng'
+		'user_parent'
 	);
 
     public function validate() {       
@@ -384,6 +547,24 @@ class Client extends User {
     }
     
     
+    public function get_vars() {
+    	$vars = array(
+    		'user_login' 			=> $this->user_login,
+			'user_business_name' 	=> $this->business_name,
+			'user_first_name' 		=> $this->first_name,
+			'user_last_name'		=> $this->last_name,
+			'user_email'			=> $this->data->user_email,
+			'user_phone'			=> $this->phone,
+			'user_address1'			=> $this->address,
+			'user_address2'			=> $this->address2,
+			'user_city'				=> $this->city,
+			'user_state'			=> $this->state,
+			'user_zipcode'			=> $this->zipcode,
+			'user_login'			=> $this->data->user_login
+    	);
+    	
+    	return $vars;
+    }
     
     public function parse( &$postdata ) { // Modify to also get our usermeta
         $ret 		=& parent::parse( $postdata );
@@ -397,8 +578,6 @@ class Client extends User {
     } 
     
     public function save() {
-    	$geodata = $this->get_geodata();
-    	$this->set($geodata);
      	parent::save();
     }
     
@@ -414,28 +593,6 @@ class Client extends User {
 		return $json; 
     }
     
-    public function get_geodata() {
-    	$fulladdress =	$this->address.' ';
-    	$fulladdress .=	$this->address2.' ';
-    	$fulladdress .=	$this->city.' ';
-    	$fulladdress .=	$this->zipcode.' ';
-    	$fulladdress .=	$this->state;
-    	
- 		$resp = wp_remote_get( "http://maps.googleapis.com/maps/api/geocode/json?address=".urlencode($fulladdress)."&sensor=false" );
-    	
-    	$lat = null;
-    	$lng = null;
-    	
-    	
-    	if ($resp['response']['message'] == 'OK') {
-    	 	$data = json_decode($resp['body']);	
-    		$lat = $data->results[0]->geometry->location->lat;
-    		$lng = $data->results[0]->geometry->location->lng;
-    	}
-    	
-    	return array('lat'=>$lat, 'lng'=>$lng);
-    }
-
 }
 
 

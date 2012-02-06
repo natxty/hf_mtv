@@ -496,15 +496,26 @@ function how_it_works() {
 
 function ajax_form_data($request) {
 
-    $posts_data = json_decode($_POST['data']);
-
+    $post_data = json_decode(str_replace("\\", "", $_POST['data']));
+    /*
+     foreach($posts_data as $key => $value) {
+        $txt .= $key . "= " . $value . "\n";
+    }
+    */
+	/*
+    $time = date("Y-d-m",time());
+    $fp = fopen('/Users/natxty/Documents/production_sites/hitfigure/_log/' . $time . '_log.txt', 'a');
+    fwrite($fp, $post_data."\n");
+    fclose($fp);
+	*/
     // do something with my data
-    $return_data = json_encode($posts_data);
+    //$return_data = json_encode($posts_data);
     
     $success = true;
 
     if ($success)
-        \mtv\shortcuts\display_json($return_data);
+      \mtv\shortcuts\display_json($post_data);
+        //echo '{ "response" : "here" }';
     else
         throw new \mtv\http\AjaxHttp500("Something bad happened.");
 
