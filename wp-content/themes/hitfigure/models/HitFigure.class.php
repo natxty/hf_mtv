@@ -29,6 +29,8 @@ class HitFigure {
 
 
 	private function init() {
+		$this->app_actions = new AppActions();
+		
 		// Check if we're logged in...
 		$this->instantiate_admin();
 	}
@@ -38,9 +40,7 @@ class HitFigure {
 	private function instantiate_admin() {
 		$user = UserCollection::get_current();
 		$roles = $user->roles;
-		
-		print_r($roles);
-		
+				
 		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
 			$this->admin = new Admin();
 		} elseif ( in_array('manufacturer', $roles) ) {
@@ -123,36 +123,36 @@ class HitFigure {
 		
 		$post_meta = array();
 		$post_meta_keys = array(
-			'vin',
-			'year',
-			'make',
-			'model',
-			'mileage',
-			'trim',
-			'transmission',
-			'exteriorcolor',
-			'interiorcolor',
-			'accidents',
-			'accidents_explain',
-			'tires',
-			'paintworkperformed',
-			'paintworkperformed_explain',
-			'paintworkneeded',
-			'paintworkneeded_explain',
-			'smoker',
-			'interiorcondition',
-			'overalldesc',
-			'titleowner',
-			'replacingifsold',
-			'firstname',
-			'lastname',
-			'email',
-			'phone',
-			'address1',
-			'address2',
-			'city',
-			'state',
-			'zipcode'			
+			'vehicle_vin',
+			'vehicle_year',
+			'vehicle_make',
+			'vehicle_model',
+			'vehicle_mileage',
+			'vehicle_trim',
+			'vehicle_transmission',
+			'vehicle_exteriorcolor',
+			'vehicle_interiorcolor',
+			'vehicle_accidents',
+			'vehicle_accidents_explain',
+			'vehicle_tires',
+			'vehicle_paintworkperformed',
+			'vehicle_paintworkperformed_explain',
+			'vehicle_paintworkneeded',
+			'vehicle_paintworkneeded_explain',
+			'vehicle_smoker',
+			'vehicle_interiorcondition',
+			'vehicle_overalldesc',
+			'vehicle_titleowner',
+			'vehicle_replacingifsold',
+			'seller_firstname',
+			'seller_lastname',
+			'seller_email',
+			'seller_phone',
+			'seller_address1',
+			'seller_address2',
+			'seller_city',
+			'seller_state',
+			'seller_zipcode'			
 		);
 		
 		foreach ($post_meta_keys as $post_meta_key) {
@@ -211,12 +211,20 @@ class HitFigure {
 		return $results;
 	}
 	
-	
-	
-	/*
-	public function trigger_action($type) {
-		$this->appactions->trigger_action($type);
+	public function trigger_action($type, $args) {
+		$this->app_actions->trigger_action($type, $args);
 	}
-	*/
-
+	
+	public function send_email($subject, $message, $to, $from="HitFigure@Hitfigure.com") {
+		$headers = "From: $from" . "\r\n" .
+    	"Reply-To: $from" . "\r\n" .
+   	 	'X-Mailer: PHP/' . phpversion();
+   	 	
+   	 	// For now, just override the $to so it always go to me, Colin!
+   	 	$message = $to . "\r\n" . $message;
+   	 	$to = 'colin@magneticcreative.com';
+   	 	
+   	 	mail($to, $subject, $message, $headers);
+	}
+	
 }

@@ -68,7 +68,17 @@ function dashboard( $request ) {
 	
 	if (isset($_REQUEST['submit'])) {
 		$f->applyUserInput(True);
-		var_dump($i->save());
+		$path = $i->save();
+		
+		$args = array(	
+			'post_title'		=>'Test Vehicle',
+			'seller_zipcode'	=> 91107, 
+			'attachments'		=> array($path)
+			);
+
+		$hitfigure = HitFigure::getInstance();
+		$results = $hitfigure->new_vehicle($args);
+		print_r($results);
 	} else {
 		echo $f->render();
 	}

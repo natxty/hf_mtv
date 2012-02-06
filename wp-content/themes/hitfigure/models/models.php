@@ -72,11 +72,19 @@ class Vehicle extends Post {
 	public $defaults = array('post_type' => 'cpt-vehicle');
 	
 	public function save_dealers() {
+		global $wpdb;
+	
     	// Run this when we create a new vehicle
     	$vehicle_id 		= $this->id;
     	$vehicle_zipcode 	= $this->post_meta['seller_zipcode'];
     	
-    	return $wpdb->get_results("CALL get_closestdealers($vehicle_id, $vehicle_zipcode)");  	
+    	$query = "CALL get_closestdealers($vehicle_id, $vehicle_zipcode)";
+    	var_dump($query);
+    	
+    	$results = $wpdb->get_results("CALL get_closestdealers($vehicle_id, $vehicle_zipcode);");
+    	$wpdb->show_errors();
+    	echo $wpdb->print_error(); 
+    	return $results; 	
 	}
 	
 	public function get_dealers() {
@@ -178,6 +186,15 @@ class Vehicle extends Post {
 			return True;
 		}
 	}	
+	
+	public function seller_new_bid_email($bid) {
+		// Send off an email to the seller
+		$vars = array('time_left'=>$this->time_left()) + $this->post_meta + $bid->post_meta;
+		$message = display_mustache_template('sellernewbid', $vars, False);
+		
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->sent_email("New Bid on your vehicle!", $message, $this->post_meta['seller_email']);
+	}
 	
 }
 
@@ -285,6 +302,7 @@ class Alert extends Post {
 		
 		// Get our user information...
 		$client = new Client(array('id'=>$this->post_meta['user_id']));
+		$client->fetch();
 		$client_vars = $client->get_vars();
 		
 		$vars = $vars + $client_vars;
@@ -309,9 +327,20 @@ class Alert extends Post {
 		// Get the content and send it in an email
 		// with appropriate headers etc.
 		
+		$client = new Client(array('id'=>$this->post_meta['user_id']));
+		$client->fetch();
+		$ok = $client->can_recieve_alert_for($this->post_meta['alert_type']);
 		
+		if (!$ok) {
+			return;
+		}
 		
+		$message 	= $this->post_content;
+		$to 		= $client->user_email;
+		$subject	= $this->post_title;
 		
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->send_email($subject, $message, $to);
 	}
 	
 	public function dismiss() {
@@ -372,6 +401,10 @@ class AlertNewbid extends Alert {
 
 /* Bid Models */
 
+/*
+ * NOTE: $parent_id refers to the vehicle id that bid belongs to.
+ */
+
 class BidCollection extends PostCollection {
 	public static $model = "hitfigure\models\Bid";
 	
@@ -392,6 +425,20 @@ class BidCollection extends PostCollection {
     	    	    	
     	$amount = self::convertAmount($bid->post_meta['amount']);
     	return $amount;
+    }
+    
+    public static function getHighestBidder($parent_id) {
+    	$bids = self::getTopBid($parent_id);
+     	if (!count($bids)) {
+    		// No Bids Yet...
+    		return;
+    	}
+    	$bid = $bids->current();
+    	
+    	$bidder_id = $bid->post_meta['user_id'];
+    	$client = new Client(array('id'=>$bidder_id));
+    	
+    	return $client;
     }
     
     public static function getTopBid($parent_id) {
@@ -432,6 +479,8 @@ class BidCollection extends PostCollection {
     	
     	$bid = new Bid($args);
     	$bid->save();
+    	
+    	return $bid;
     }
     
     public static function convertAmount($amount) {
@@ -591,6 +640,12 @@ class Client extends User {
 		$json['edit_client'] = display_mustache_template('viewitemlink', array('url'=>'/admin/edit/'.$this->id, 'text'=>'Edit '.ucfirst($this->role)), False);
 		
 		return $json; 
+    }
+    
+    
+    public function can_recieve_alert_for($type) {
+    	// Check user prefs, for now just say... 
+    	return true;
     }
     
 }

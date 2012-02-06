@@ -9,23 +9,24 @@ namespace hitfigure\models;
 
 class AppActions {
 
-	public function trigger_action($type) {
+	public function trigger_action($type, $args) {
 		// Call functions based on a triggered action
+		$hitfigure = HitFigure::getInstance();
 		
 		switch($type) {
 			case 'bid_placed':
-				// Get all users who have bid on this lead
+				$vehicle 	= $args['vehicle'];
+				$bid 		= $args['bid'];
 				
-				// Loop through them and create the necessary user type (dealer class/ manufacturer class)
+				// We just get the highest bidder, then email them they were outbid
+				$client = BidCollection::getHighestBidder($vehicle->id);
+				AlertCollection::new_alert('outbid', $client->id);
 				
-				// Call their bid_placed functions which should check their user email permissions and either send an alert + email or not
-				// it should also double check if thier bid has been outbid and send them a new outbid alert w/ email
-				
-				// Get the lead that was bid on
-				
+				// Then email the currently logged in user
+				AlertCollection::new_alert('newbid');
 				
 				// Send the submitter of that lead an email
-				
+				$vehicle->seller_new_bid_email();
 				break;
 		}
 	
