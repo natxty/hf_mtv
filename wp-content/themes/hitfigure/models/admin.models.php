@@ -40,11 +40,6 @@ class BasicAdmin extends Admin {
 		return parent::get_client_data_vars($type, $args);
 	}
 	
-	protected function nopriv() {
-		$hitfigure = HitFigure::getInstance();
-		display_mustache_template('nopriv', $hitfigure->template_vars());
-		exit;
-	}
 }
 
 

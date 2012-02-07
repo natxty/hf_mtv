@@ -46,57 +46,16 @@ function how_it_works() {
 	
 	$f->add($s);
 	
-	
-	
 	/* Vehicle Make */
-	$s = new \Select('vehicle_make');
-	$s->setProperties(array(
-		'id' => 'id_vehicle_make',
-		'name' =>'vehicle_make',
-		'text' =>'Make',			
-		'required'=>True
-	));
-
-    $s->add_option('opt',array('text'=> '-- Select a Make --'));
-
-	$order = 'ASC';
-	$makes = get_car_makes();
-	foreach($makes as $make) {
-		$s->add_option('opt',array('text'=>$make->car_make,'value'=> $make->car_make));
-	}
-	
+	$s = get_car_makes(null, 'ASC');
 	$f->add($s);
 	
 	/* Vehicle Model */
-	$s = new \Select('vehicle_model');
-	$s->setProperties(array(
-		'id' => 'id_vehicle_model',
-		'name' =>'vehicle_model',
-		'text' =>'Model',			
-		'required'=>True
-	));
-	
-
-	$order = 'ASC';
-	$models = $wpdb->get_results("select distinct car_model from $tbl order by car_model $order");
-
-	$s->add_option('opt',array('text'=>'-- Select a Model --'));
-    foreach($models as $model) {
-		$s->add_option('opt',array('text'=>$model->car_model,'value'=> $model->car_model));
-	}
+	$s = get_car_models(null, 'ASC');	
 	$f->add($s);
 	
-	
-	/* Vehicle Trim */
-	$s = new \Select('vehicle_trim');
-	$s->setProperties(array(
-		'id' => 'id_vehicle_trim',
-		'name' =>'vehicle_trim',
-		'text' =>'Trim',
-		'required'=>False
-	));
-
-	$s->add_option('opt',array('text'=>'-- Select A Trim --'));
+	/* Vehicle Trim*/
+	$s = get_car_trim(null, 'DESC');
 	$f->add($s);
 	
 	/* Vehicle Transmission */
@@ -482,9 +441,10 @@ function how_it_works() {
 	));
 	$f->add($b);
 
-	if ( isset($_REQUEST['confirm']) ) { 
+	if ( isset($_REQUEST['confirm']) ) {
+		
 		$f->applyUserInput(True);
-		if ($f->validate()) {
+		if (!$f->validate()) {
 			// Unset anything private here, but our validation_func's should print errors etc.
                echo "failed";
 		} else {
@@ -494,41 +454,57 @@ function how_it_works() {
             extract($_REQUEST);
             
             $args = array(
-                'vehicle_vin' => 'vehicle_vin',
-                'vehicle_year'=> 'vehicle_year',
-                'vehicle_make'=> 'vehicle_make',
-                'vehicle_model'=> 'vehicle_model',
-                'vehicle_mileage'=> 'vehicle_mileage',
-                'vehicle_trim'=> 'vehicle_trim',
-                'vehicle_transmission'=> 'vehicle_transmission',
-                'vehicle_exteriorcolor'=> 'vehicle_exterior_color',
-                'vehicle_interiorcolor'=> 'vehicle_interior_color',
-                'vehicle_accidents'=> 'vehicle_known_accidents',
-                'vehicle_accidents_explain'=> 'vehicle_accidents_explain',
-                'vehicle_tires'=> 'vehicle_tires_sixty_percent',
-                'vehicle_paintworkperformed'=> 'vehicle_paintwork_performed',
-                'vehicle_paintworkperformed_explain'=> 'vehicle_paintwork_performed_explained',
-                'vehicle_paintworkneeded'=> 'vehicle_paintwork_needed',
-                'vehicle_paintworkneeded_explain'=> 'vehicle_paintwork_needed_explain',
-                'vehicle_smoker'=> 'vehicle_smoker',
-                'vehicle_interiorcondition'=> 'vehicle_interior_condition',
-                'vehicle_overalldesc'=> 'vehicle_overall_condition',
-                'vehicle_titleowner'=> 'vehicle_title_owner',
-                'vehicle_replacingifsold'=> 'vehicle_replacing_if_sold',
-                'seller_firstname'=> 'vehicle_first_name',
-                'seller_lastname'=> 'vehicle_last_name',
-                'seller_email'=> 'vehicle_email',
-                'seller_phone'=> 'vehicle_phone',
-                'seller_address1'=> 'vehicle_address1',
-                'seller_address2'=> 'vehicle_address2',
-                'seller_city'=> 'vehicle_city',
-                'seller_state'=> 'vehicle_state',
-                'seller_zipcode'=> 'vehicle_zipcode'
+                'vehicle_vin' => $vehicle_vin,
+				'vehicle_year'=> $vehicle_year,
+				'vehicle_make'=> $vehicle_make,
+				'vehicle_model'=> $vehicle_model,
+				'vehicle_mileage'=> $vehicle_mileage,
+				'vehicle_trim'=> $vehicle_trim,
+				'vehicle_transmission'=> $vehicle_transmission,
+				'vehicle_exteriorcolor'=> $vehicle_exterior_color,
+				'vehicle_interiorcolor'=> $vehicle_interior_color,
+				'vehicle_accidents'=> $vehicle_known_accidents,
+				'vehicle_accidents_explain'=> $vehicle_accidents_explain,
+				'vehicle_tires'=> $vehicle_tires_sixty_percent,
+				'vehicle_paintworkperformed'=> $vehicle_paintwork_performed,
+				'vehicle_paintworkperformed_explain'=> $vehicle_paintwork_performed_explained,
+				'vehicle_paintworkneeded'=> $vehicle_paintwork_needed,
+				'vehicle_paintworkneeded_explain'=> $vehicle_paintwork_needed_explain,
+				'vehicle_smoker'=> $vehicle_smoker,
+				'vehicle_interiorcondition'=> $vehicle_interior_condition,
+				'vehicle_overalldesc'=> $vehicle_overall_condition,
+				'vehicle_titleowner'=> $vehicle_title_owner,
+				'vehicle_replacingifsold'=> $vehicle_replacing_if_sold,
+				'seller_firstname'=> $vehicle_first_name,
+				'seller_lastname'=> $vehicle_last_name,
+				'seller_email'=> $vehicle_email,
+				'seller_phone'=> $vehicle_phone,
+				'seller_address1'=> $vehicle_address_1,
+				'seller_address2'=> $vehicle_address_2,
+				'seller_city'=> $vehicle_city,
+				'seller_state'=> $vehicle_state,
+				'seller_zipcode'=> $vehicle_zipcode
             );
+            
+            $attachments = array();
+            
+			for($x=1;$x<=10;$x++) {
+				$filepath = $f->{'id_vehicle_image_'.$x}->save();
+				
+				if ($filepath) {
+					$attachments[] = $filepath;
+				}
+			}
+			
+			if ($attachments) {
+				$args['attachments'] = $attachments;
+			}
 
             //get the data in!
             $hitfigure = HitFigure::getInstance();
-            $saving = $hitfigure->new_vehicle($args);
+            if($saving = $hitfigure->new_vehicle($args)) {				
+				// Redirect here... cuz we're all done!
+			}
 
 		}
 	}
@@ -552,18 +528,18 @@ function how_it_works() {
 
 function ajax_form_data($request) {
 
-    $post_data = json_decode(str_replace("\\", "", $_POST['data']));
-    $action = $post_data->action;
-    $xdata = $post_data->data;
+    $post_data 	= json_decode(str_replace("\\", "", $_POST['data']));
+    $action 	= $post_data->action;
+    $xdata 		= $post_data->data;
     switch($action) {
         case 'vehicle_makes':
-            $data = get_car_makes($xdata, 'ASC');
+            $data = get_car_makes($xdata, 'ASC', true);
             break;
         case 'vehicle_models':
-            $data = get_car_models($xdata, 'ASC');
+            $data = get_car_models($xdata, 'ASC', true);
             break;
         case 'vehicle_trims':
-            $data = get_car_trim($xdata, 'ASC');
+            $data = get_car_trim($xdata, 'ASC', true);
             break;
     }
 
@@ -576,9 +552,21 @@ function ajax_form_data($request) {
 
 }
 
-function get_car_makes($car_year = null, $order = 'DESC') {
+function get_car_makes($car_year = null, $order = 'DESC', $json=false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
+    
+    
+    /* Vehicle Make */
+	$s = new \Select('vehicle_make');
+	$s->setProperties(array(
+		'id' => 'id_vehicle_make',
+		'name' =>'vehicle_make',
+		'text' =>'Make',			
+		'required'=>True
+	));
+
+    $s->add_option('opt',array('text'=> '-- Select a Make --'));
     
     //get all makes
     $query = "SELECT DISTINCT car_make FROM $tbl ";
@@ -589,17 +577,33 @@ function get_car_makes($car_year = null, $order = 'DESC') {
 
 	$makes = $wpdb->get_results($query);
 
-    if($wpdb->num_rows > 0) {
-        return $makes;
-    } else {
-        return false;
-    }
+	foreach($makes as $make) {
+		$s->add_option('opt',array('text'=>$make->car_make,'value'=> $make->car_make));
+	}
 
+	if (!$json) {
+		return $s;
+	} else {
+		return array(
+			'html' 		=> $s->render(),
+			'result_id'	=> $s->id
+		);
+	}
 }
 
-function get_car_models($car_make = null, $order = 'DESC') {
+function get_car_models($car_make = null, $order = 'DESC', $json=false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
+
+
+	/* Vehicle Model */
+	$s = new \Select('vehicle_model');
+	$s->setProperties(array(
+		'id' => 'id_vehicle_model',
+		'name' =>'vehicle_model',
+		'text' =>'Model',			
+		'required'=>True
+	));
 
     //get all makes
     $query = "SELECT DISTINCT car_model FROM $tbl ";
@@ -607,33 +611,61 @@ function get_car_models($car_make = null, $order = 'DESC') {
        $query .= "WHERE car_make = '" . $car_make . "' ";
     }
     $query .= "ORDER BY car_model $order";
-
+	
 	$models = $wpdb->get_results($query);
 
-    if($wpdb->num_rows > 0) {
-        return $models;
-    } else {
-        return false;
-    }
+	$s->add_option('opt',array('text'=>'-- Select a Model --'));
+    
+    foreach($models as $model) {
+		$s->add_option('opt',array('text'=>$model->car_model,'value'=> $model->car_model));
+	}
+	
+	if (!$json) {
+		return $s;
+	} else {
+		return array(
+			'html' 		=> $s->render(),
+			'result_id'	=> $s->id
+		);
+	}
 }
 
-function get_car_trim($car_model = null, $order = 'DESC') {
+function get_car_trim($car_model = null, $order = 'DESC', $json = false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
-    //get all makes
-    $query = "SELECT DISTINCT car_trim FROM $tbl ";
-    if($car_model) {
-       $query .= "WHERE car_model = '" . $car_model . "' ";
-    }
-    $query .= "ORDER BY car_trim $order";
+ 
+ 	/* Vehicle Trim */
+	$s = new \Select('vehicle_trim');
+	$s->setProperties(array(
+		'id' => 'id_vehicle_trim',
+		'name' =>'vehicle_trim',
+		'text' =>'Trim',
+		'required'=>False
+	));
 
-	$trim = $wpdb->get_results($query);
+	$s->add_option('opt',array('text'=>'-- Select A Trim --'));
+ 
+ 	if ($car_model) {
+ 	    $query = "SELECT DISTINCT car_trim FROM $tbl ";
+	    $query .= "WHERE car_model = '" . $car_model . "' ";
+	    $query .= "ORDER BY car_trim $order";
+	
+		$trims = $wpdb->get_results($query);
+		
+	    foreach($trims as $trim) {
+	    	if ($trim->car_trim)
+				$s->add_option('opt',array('text'=>$trim->car_trim,'value'=> $trim->car_trim));
+		}
+	}
 
-    if($wpdb->num_rows > 0) {
-        return $trim;
-    } else {
-        return false;
-    }
+	if (!$json) {
+		return $s;
+	} else {
+		return array(
+			'html' 		=> $s->render(),
+			'result_id'	=> $s->id
+		);
+	}
 }
 
 

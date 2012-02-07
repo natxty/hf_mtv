@@ -15,7 +15,7 @@
                                                     <tr>
 
                                                         <td valign="middle">
-                                                            <img src="{{imgdir}}/email/hdr_vehicle_submitted.jpg" id="headerImage campaign-icon" />
+                                                            <img src="{{imgdir}}/email/hdr_vehicle_submitted.jpg" id="headerImage campaign-icon" mc:label="header_image"  mc:allowtext />
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -39,19 +39,20 @@
                                                     <tr>
                                                         <td valign="top">
                                                             <div>
-																<p>Hello again, <strong>{{seller_firstname}}</strong>,</p>
-
-																<p>We're excited to tell you that someone has made an offer on your vehicle, {{vehicle_year}} {{vehicle_make}} {{vehicle_model}}. For the amount of {{amount}}!</p>
-
-																<p>There's no need to do anything at this point, {{seller_firstname}}, you still have {{time_left}} left, and we'll let you know if someone else makes a higher bid.</p>
-
-																<p>Stay tuned!</p>
-
-																<p>~The HitFigure Team</p>
+                                                           	  <p>Hello, <strong>{{user_business_name}}</strong>! A vehicle has just been submitted to Hitfigure that matches your criteria!</p>
+                                                              <p>Here's an overview:</p>
+                                                              <ul>
+															  	<li><strong>{{vehicle_year}} {{vehicle_make}} {{vehicle_model}}</strong></li>
+																{{#vehicle_overalldesc}}<li>Condition: {{vehicle_overalldesc}}</li>{{/vehicle_overalldesc}}
+																<li>Mileage: {{vehicle_mileage}}</li>
+                                                              </ul>
+															  <p>You can view the full profile <a href="{{siteurl}}/admin/lead/{{vehicle_id}}">here</a> and make an offer.</a></p>
+															  <p>Best of luck!</p>
+															  <p>~The HitFigure Team</p>
 															  
 															  <img src="{{imgdir}}/email/divider_grey.gif" />
 															  
-                                                              <p>Please do not respond to this email. If you need assistance, contact HitFigure using the information found here. We’re happy to help..
+                                                              <p>Please do not respond to this email. If you need assistance, contact HitFigure using the information found here. Weâ€™re happy to help..
 														  </div>
 														</td>
                                                     </tr>
@@ -92,6 +93,7 @@
                                                             </div>
                                                         </td>
                                                     </tr>
+  
                                                 </table>
                                                 <!-- // End Module: Standard Footer \\ -->
                                             

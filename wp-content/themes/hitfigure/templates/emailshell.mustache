@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>HitFigure Alert</title>
+		<style type="text/css">
+			/* Client-specific Styles */
+			#outlook a{padding:0;} /* Force Outlook to provide a "view in browser" button. */
+			body{width:100% !important;} .ReadMsgBody{width:100%;} .ExternalClass{width:100%;} /* Force Hotmail to display emails at full width */
+			body{-webkit-text-size-adjust:none;} /* Prevent Webkit platforms from changing default text sizes. */
+			
+			/* Reset Styles */
+			body{margin:0; padding:0;}
+			img{border:0; height:auto; line-height:100%; outline:none; text-decoration:none;}
+			table td{border-collapse:collapse;}
+
+			body, #backgroundTable{
+				background-color:#FAFAFA;
+			}
+
+			#templateContainer{
+				border:0;
+			}
+
+			h1, .h1{
+				color:#202020;
+				display:block;
+				font-family:Arial;	
+				font-size:40px;
+				font-weight:bold;
+				line-height:100%;
+				margin-top:2%;
+				margin-right:0;
+				margin-bottom:1%;
+				margin-left:0;
+				text-align:left;
+			}
+
+			h2, .h2{
+				color:#404040;
+				display:block;
+				font-family:Arial;
+				font-size:18px;
+				font-weight:bold;
+				line-height:100%;
+				margin-top:2%;
+				margin-right:0;
+				margin-bottom:1%;
+				margin-left:0;
+				text-align:left;
+			}
+
+			h3, .h3{
+				color:#606060;
+				display:block;
+				font-family:Arial;
+				font-size:16px;
+				font-weight:bold;
+				line-height:100%;
+				margin-top:2%;
+				margin-right:0;
+				margin-bottom:1%;
+				margin-left:0;
+				text-align:left;
+			}
+
+			h4, .h4{
+				color:#808080;
+				display:block;
+				font-family:Arial;
+				font-size:14px;
+				font-weight:bold;
+				line-height:100%;
+				margin-top:2%;
+				margin-right:0;
+				margin-bottom:1%;
+				margin-left:0;
+				text-align:left;
+			}
+
+			#templatePreheader{
+				background-color:#FAFAFA;
+			}
+
+			.preheaderContent div{
+				color:#707070;
+				font-family:Arial;
+				font-size:10px;
+				line-height:100%;
+				text-align:left;
+			}
+
+			.preheaderContent div a:link, .preheaderContent div a:visited, /* Yahoo! Mail Override */ .preheaderContent div a .yshortcuts /* Yahoo! Mail Override */{
+				color:#336699;
+				font-weight:normal;
+				text-decoration:underline;
+			}
+
+			#social div{
+				text-align:right;
+			}
+
+			#templateHeader{
+				background-color:#FFFFFF;
+				/* border-bottom:5px solid #505050; */
+			}
+
+			.leftHeaderContent div{
+				color:#202020;
+				font-family:Arial;
+				font-size:32px;
+				font-weight:bold;
+				line-height:100%;
+				text-align:right;
+				vertical-align:middle;
+			}
+
+			.rightHeaderContent div{
+				color:#202020;
+				font-family:Arial;
+				font-size:32px;
+				font-weight:bold;
+				line-height:100%;
+				text-align:left;
+				vertical-align:middle;
+			}
+
+			.leftHeaderContent div a:link, .leftHeaderContent div a:visited, .rightHeaderContent div a:link, .rightHeaderContent div a:visited{
+				color:#336699;
+				font-weight:normal;
+				text-decoration:underline;
+			}
+
+			#headerImage{
+				height:auto;
+				max-width:180px !important;
+			}
+
+			#templateContainer, .bodyContent{
+				background-color:#FDFDFD;
+			}
+
+			.bodyContent div{
+				color:#505050;
+				font-family:Arial;
+				font-size:14px;
+				line-height:150%;
+				text-align:left;
+			}
+
+			.bodyContent div a:link, .bodyContent div a:visited, /* Yahoo! Mail Override */ .bodyContent div a .yshortcuts /* Yahoo! Mail Override */{
+				color:#336699;
+				font-weight:normal;
+				text-decoration:underline;
+			}
+			
+			.bodyContent img{
+				display:inline;
+				height:auto;
+			}
+
+			#templateFooter{
+				background-color:#FAFAFA;
+				border-top:3px solid #909090;
+			}
+
+			.footerContent div{
+				color:#707070;
+				font-family:Arial;
+				font-size:11px;
+				line-height:125%;
+				text-align:left;
+			}
+
+			.footerContent div a:link, .footerContent div a:visited, /* Yahoo! Mail Override */ .footerContent div a .yshortcuts /* Yahoo! Mail Override */{
+				color:#336699;
+				font-weight:normal;
+				text-decoration:underline;
+			}
+			
+			.footerContent img{
+				display:inline;
+			}
+			
+			#social{
+				background-color:#FFFFFF;
+				border:0;
+			}
+
+			#social div{
+				text-align:left;
+			}
+
+			#utility{
+				background-color:#FAFAFA;
+				border-top:0;
+			}
+
+			#utility div{
+				text-align:left;
+			}
+			
+			.inset {
+				background: #e1e1e1 url('{{imgdir}}/email/bg_inset_gradient.png') top left repeat-x;
+				width: 100%;
+				padding: 10px;
+			}
+			
+			.inset strong {
+				font-size: 18px;
+				line-height: 45px;
+				font-weight: bold;
+				font-style: italic;
+			}
+			
+			.inset img {
+				vertical-align: center;
+			}
+		</style>
+	</head>
+    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0">
+    
+    	{{#is_alert}}
+    	<center>
+        	<table border="0" cellpadding="0" cellspacing="0" width="100%" id="backgroundTable">
+            	<tr>
+                	<td align="center" valign="top">
+                        <!-- // Begin Template Preheader \\ -->
+                        <table border="0" cellpadding="10" cellspacing="0" width="600" id="templatePreheader">
+                            <tr>
+                                <td valign="top" class="preheaderContent">
+                                
+                                	<!-- // Begin Module: Standard Preheader \ -->
+                                    <table border="0" cellpadding="10" cellspacing="0" width="100%">
+                                    	<tr>
+                                        	<td valign="top">
+                                            	<div>
+                                                	 Hitfigure says: New vehicle submitted: {{vehicle_name}}
+                                                </div>
+                                            </td>
+											<td valign="top" width="170">
+                                            	<div>
+                                                	Email not displaying correctly?<br /><a href="{{siteurl}}/admin/lead/{{vehicle_id}}" target="_blank">Access the vehicle directly</a>.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                	<!-- // End Module: Standard Preheader \ -->
+                                    
+                                </td>
+                            </tr>
+                        </table>
+                     </td>
+                 </tr>
+			</table>
+		</center>
+		{{/is_alert}}
+
+		{{&message}}
+		
+
+    </body>
+</html>

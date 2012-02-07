@@ -103,7 +103,7 @@ $(document).ready(function() {
 
     /* Main Select Elements + AJAX calls to get filtered options from the DB */
     /* Year => Makes */
-    jQuery('#id_vehicle_year').change(function() {
+    jQuery('#id_vehicle_year').live('change', function() {
 
 		cyear = jQuery('#id_vehicle_year').val();
         var a = {
@@ -119,7 +119,7 @@ $(document).ready(function() {
 	});
 
     /* Makes => Models */
-    jQuery('#id_vehicle_make').change(function() {
+    jQuery('#id_vehicle_make').live('change', function() {
         //take make and return models
 		cmake = jQuery('#id_vehicle_make').val();
         var a = {
@@ -135,7 +135,7 @@ $(document).ready(function() {
 	});
 
     /* Models => Trim (if any) */
-    jQuery('#id_vehicle_model').change(function() {
+    jQuery('#id_vehicle_model').live('change', function() {
 
 		cmodel = jQuery('#id_vehicle_model').val();
         var a = {
@@ -160,6 +160,9 @@ $(document).ready(function() {
     * 
      */
 	function get_car_data(obj) {
+		// Set current to disabled, it'll get overwritten when we add the ajax result
+		jQuery(obj.result_id).attr('disabled','disabled');
+	
         var resultType = 'car_' + obj.text;
         var topOptionText = ucwords(obj.text);
 
@@ -169,12 +172,7 @@ $(document).ready(function() {
 			obj.xdata,
 			function( response ) {
                 //if(debug) alert(response.length);
-                var listItems= "<option value=''>-- Select a " + topOptionText + " --</option>";
-				for (var i = 1; i < response.length; i++){
-					listItems+= "<option value='" + response[i][resultType] + "'>" + response[i][resultType] + "</option>";
-				}
-				jQuery(obj.result_id).html(listItems);
-
+				jQuery(obj.result_id).parent().replaceWith(response.html);
 			},
             function(error) {
                 alert('error')

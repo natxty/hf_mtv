@@ -7,7 +7,7 @@ class FileInput extends FormElement {
 
 
 	public function save() {
-		if (!$this->validated()) { // Don't even think about it...
+		if (!$this->validated() || !$this->file_tmp_name) { // Don't even think about it...
 			return false;			
 		}
 		

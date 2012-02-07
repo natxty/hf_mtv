@@ -14,6 +14,15 @@ class Admin {
 	public function __construct() {
 		$this->user = UserCollection::get_current();
 	}
+	
+	
+	
+	
+	protected function nopriv() {
+		$hitfigure = HitFigure::getInstance();
+		display_mustache_template('nopriv', $hitfigure->template_vars());
+		exit;
+	}	
 
 
 
@@ -406,6 +415,33 @@ class Admin {
 	
 	
 	
+	public function view_alert( $id ) {
+		
+		$alerts = AlertCollection::filter(array(
+			'p'				=>$id,
+			'meta_query' 	=> array(
+					array(
+						'key' 		=> 'user_id',
+						'value'	 	=> $this->user->id
+					)
+				)	
+		));
+		
+		if (!count($alerts)) {
+			$this->no_priv();
+		}
+		
+		$alert = $alerts->current();
+		
+		$vars = array(
+			'alert_message'=>$alert->post_content
+		);
+		
+		return $vars;
+	}
+	
+	
+	
 	public function get_client_data($type) {
 		return $this->get_client_data_vars($type);
 	}
@@ -438,6 +474,19 @@ class Admin {
 	protected function get_lead_data_vars() {
 		$json = VehicleCollection::get_json_vehicle_data();
 		return array('aaData'=>$json);	
+	}
+	
+	
+	
+	public function get_alert_data() {
+		return $this->get_alert_data_vars();
+	}
+	
+	
+	
+	protected function get_alert_data_vars() {
+		$json = AlertCollection::get_json_alert_data();
+		return array('aaData'=>$json);
 	}
 	
 	

@@ -81,7 +81,7 @@ class HitFigure {
 
 
 	
-	public function get_header_vars() {
+	public function get_header_vars($vars = array()) {
 		global $page, $paged;
 	
 		$title  = wp_title( '|', false, 'right' );
@@ -104,7 +104,7 @@ class HitFigure {
 		$wp_head = ob_get_contents();
 		ob_end_clean();
 		
-		return array(
+		return $vars + array(
 			'title'			=> $title,
 			'stylesheet'	=> $stylesheet,
 			'body_class'	=> $body_class,
@@ -114,22 +114,28 @@ class HitFigure {
 
 
 
-	public function get_footer_vars() {
+	public function get_footer_vars($vars = array()) {
 		ob_start();
 		wp_footer();
 		$wp_footer = ob_get_contents();
 		ob_end_clean();
 		
-		return array('wp_footer'=>$wp_footer);	
+		return $vars + array('wp_footer'=>$wp_footer);	
 	}
 	
 	
 	
-	public function get_wp_data() {
-		return array(
+	public function get_wp_data($vars = array()) {
+		$time = time();
+		
+		return $vars + array(
 			'template_directory'=>get_bloginfo('template_directory'),
 			'imgdir'=>get_bloginfo('template_directory') . '/images',
-			'logouturl'=>wp_logout_url( get_bloginfo('wpurl') . '/wp-admin/' )
+			'logouturl'=>wp_logout_url( get_bloginfo('wpurl') . '/wp-admin/' ),
+			'siteurl'=>get_bloginfo('siteurl'),
+			'date_long' => date("M d, Y", $time),
+			'date_short' => date("m/d/Y", $time),
+			'date_year' => date("Y", $time)
 		);
 	}
 	
@@ -186,6 +192,7 @@ class HitFigure {
 		
 		if ($post_meta) {
 			$args['post_meta'] = $post_meta;
+			$args['post_title'] = $post_meta['vehicle_year'] . ' ' . $post_meta['vehicle_make'] . ' ' . $post_meta['vehicle_make'];
 		}
 		
 		$vehicle = new Vehicle($args);
@@ -230,6 +237,8 @@ class HitFigure {
 		
 		// Do something with the results here... like send emails and crap... but for now just return them...
 		
+		$this->trigger_action('new_lead', array('vehicle'=>$vehicle,'dealers'=>$results));
+		
 		return $results;
 	}
 	
@@ -237,16 +246,64 @@ class HitFigure {
 		$this->app_actions->trigger_action($type, $args);
 	}
 	
-	public function send_email($subject, $message, $to, $from="HitFigure@Hitfigure.com") {
+	public function send_email($subject, $message, $to, $from="HitFigure@Hitfigure.com", $amputated = null) {
 		$headers = "From: $from" . "\r\n" .
     	"Reply-To: $from" . "\r\n" .
    	 	'X-Mailer: PHP/' . phpversion();
+		
+		
+
    	 	
    	 	// For now, just override the $to so it always go to me, Colin!
    	 	$message = $to . "\r\n" . $message;
-   	 	$to = 'colin@magneticcreative.com';
+   	 	$to = 'dev@magneticcreative.com';
+		
+		//mail($to, $subject, $message, $headers);
+		
+		if($amputated) {
+			//1. prep our non-html version(s)
+			//1.a we need to get some of the useful info out before we crush it with strip_tags
+			
+			$plain_text = strip_tags($amputated);
+			$notice_text = str_replace(array("\r\n", "\r", "\n", "\t"), '', $plain_text);
+			
+			
+			//2. set up a nice boundary to separate our multi-parts 
+			$semi_rand = md5(time());
+			$mime_boundary = "==MULTIPART_BOUNDARY_$semi_rand";
+			$mime_boundary_header = chr(34) . $mime_boundary . chr(34);
+			
+			//3. make some new headers:		
+			$headers .= "MIME-Version: 1.0\r\n";
+			$headers .= "Content-Type: multipart/alternative;\n" . 
+			"     boundary=" . $mime_boundary_header;
+			
+			//3. put it all together!
+			
+			$body = "$notice_text
+	
+--$mime_boundary
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+$plain_text
+
+--$mime_boundary
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+$message
+--$mime_boundary--"; 
+
+		} else {
+			//no partial, stick to just email for the moment
+			$headers  .= 'MIME-Version: 1.0' . "\r\n";
+			$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+			$body = $message;
+			
+		}
    	 	
-   	 	mail($to, $subject, $message, $headers);
+   	 	mail($to, $subject, $body, $headers);
 	}
 	
 }

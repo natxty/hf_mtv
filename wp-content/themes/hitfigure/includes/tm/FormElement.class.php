@@ -31,6 +31,7 @@ abstract class FormElement extends ValueReadableView {
 	
 	private function _met_required() {
 		if ($this->required && !$this->value) {
+			var_dump($this);
 			return False;
 		}
 		return True;

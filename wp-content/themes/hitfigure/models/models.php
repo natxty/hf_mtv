@@ -1,7 +1,7 @@
 <?php
 
 namespace hitfigure\models;
-use WPException, WP_Error, WP_User, DateTime;
+use WPException, WP_Error, WP_User, DateTime, WP_Query;
 
 /* Vehicle Models */
 
@@ -69,7 +69,10 @@ class VehicleCollection extends PostCollection {
 
 
 class Vehicle extends Post {
-	public $defaults = array('post_type' => 'cpt-vehicle');
+	public $defaults = array(
+		'post_type' 	=> 'cpt-vehicle',
+		'post_status'	=> 'publish'
+	);
 	
 	public function save_dealers() {
 		global $wpdb;
@@ -78,13 +81,14 @@ class Vehicle extends Post {
     	$vehicle_id 		= $this->id;
     	$vehicle_zipcode 	= $this->post_meta['seller_zipcode'];
     	
-    	$query = "CALL get_closestdealers($vehicle_id, $vehicle_zipcode)";
-    	var_dump($query);
-    	
+    	$query = "CALL get_closestdealers($vehicle_id, $vehicle_zipcode)";    	
     	$results = $wpdb->get_results("CALL get_closestdealers($vehicle_id, $vehicle_zipcode);");
-    	$wpdb->show_errors();
-    	echo $wpdb->print_error(); 
+    	$wpdb->db_connect(); // Brute force reset after stored procedure call
     	return $results; 	
+	}
+	
+	public function get_full_name() {
+		return $this->post_meta['vehicle_year'] . ' ' . $this->post_meta['vehicle_make'] . ' ' . $this->post_meta['vehicle_model'];
 	}
 	
 	public function get_dealers() {
@@ -189,22 +193,53 @@ class Vehicle extends Post {
 	
 	public function seller_new_bid_email($bid) {
 		// Send off an email to the seller
-		$vars = array('time_left'=>$this->time_left()) + $this->post_meta + $bid->post_meta;
+		$vars = array('time_left'=>$this->time_left(), 'vehicle_name'=>$this->post_title) + $this->post_meta + $bid->post_meta;
 		$vars['amount'] = money_format('$%i', $vars['amount']);
 		
 		$message = display_mustache_template('sellernewbid', $vars, False);
+
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$message,
+			'vehicle_name'	=>$this->post_title
+		));
+		$html = display_mustache_template('emailshell', $vars, false);
 		
 		$hitfigure = HitFigure::getInstance();
-		$hitfigure->send_email("New Bid on your vehicle!", $message, $this->post_meta['seller_email']);
+		$hitfigure->send_email("New Bid on your vehicle!", $html, $this->post_meta['seller_email'], "HitFigure@Hitfigure.com", $message);
 	}
 	
 	public function seller_won_bid_email($client) {
-		$vars = $client->get_vars() + $this->post_meta;
+		$vars = array('vehicle_name'=>$this->post_title) + $client->get_vars() + $this->post_meta;
 		
 		$message = display_mustache_template('sellerwonbid', $vars, False);
 
 		$hitfigure = HitFigure::getInstance();
-		$hitfigure->send_email("Bidding has closed on your vehicle!", $message, $this->post_meta['seller_email']);
+		
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$message,
+			'vehicle_name'	=>$this->post_title
+		));
+		$html = display_mustache_template('emailshell', $vars, false);
+		
+		$hitfigure->send_email("Bidding has closed on your vehicle!", $html, $this->post_meta['seller_email'], "HitFigure@Hitfigure.com", $message);
+	}
+	
+	
+	public function seller_confirm_new_lead_email($dealers = array()) {
+		$hitfigure = HitFigure::getInstance();
+		
+		$vars = $hitfigure->get_wp_data() + $this->post_meta + array('dealers'=>$dealers);
+		
+		$message = display_mustache_template('sellerconfirmnewlead', $vars, False);
+		
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$message,
+			'vehicle_name'	=>$this->post_title
+		));
+		$html = display_mustache_template('emailshell', $vars, false);
+
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->send_email("Thanks for submitting your vehicle!", $html, $this->post_meta['seller_email'], "HitFigure@Hitfigure.com", $message);		
 	}
 	
 }
@@ -245,7 +280,39 @@ class AlertCollection extends PostCollection {
         'paged' => '1'
     );
     
-    public function new_alert($alert_type, $user_id = Null, $vehicle_id = Null) {
+    public static function filter( $args = array() ) {
+        $class = get_called_class();
+
+        $ret = new $class();
+        $ret->wp_query = new WP_Query( array_merge(static::$default_filter, $args) );
+        $ret->wp_query->get_posts();
+        
+        foreach( $ret->wp_query->posts as $post ) {
+			
+			// Dynamically instantiate based on type
+			$alert_type = get_post_meta($post->ID, 'alert_type', True);
+			$model = "hitfigure\models\Alert".ucfirst($alert_type);
+			
+			if (!class_exists($model)) {
+    			// No class matching this type
+    			$model = self::$model;
+    		}
+			
+            $p = new $model();
+
+            try {
+                $p->reload($post);
+                $ret->add($p);
+            } catch(ModelParseException $e) {
+                # post is bad for some reason, skip it
+                continue;
+            }
+        }
+
+        return $ret;
+    }    
+    
+    public static function new_alert($alert_type, $user_id = Null, $vehicle_id = Null) {
     	// Add a new alert
     	
     	$hitfigure = HitFigure::getInstance();
@@ -275,10 +342,12 @@ class AlertCollection extends PostCollection {
     	$class->save();
     	
     	$class->send_email();
+    	
+    	return $class;
     
     }
     
-    public function get_by_id( $id ) {
+    public static function get_by_id( $id ) {
 		$alerts = self::filter(array('p'=>$id, 'posts_per_page'=>1));
 		if (!count($alerts)) {
 			return Null;
@@ -286,7 +355,7 @@ class AlertCollection extends PostCollection {
 		return $alerts->current();     
     }
     
-    public function dismiss_alert( $id ) {
+    public static function dismiss_alert( $id ) {
     	// Simple way to find an alert by id and dismiss it
     	$alert = self::get_by_id($id);
     	if ($alert) {
@@ -294,12 +363,42 @@ class AlertCollection extends PostCollection {
     		$alert->dismiss();
     	}
     }
+    
+   	public static function get_json_alert_data() {
+   		$hitfigure = HitFigure::getInstance();
+   		
+   		$filter = array(
+			'meta_query' => array(
+					
+					array(
+						'key' 		=> 'user_id',
+						'value'	 	=> $hitfigure->admin->user->id
+					)
+					,array(
+						'key' 		=> 'alert_dismissed',
+						'value'		=> true,
+						'compare' 	=> '!='
+					)
+				)
+   		);
+   		
+ 
+		$alerts = self::filter($filter);
+		$json = array();
+
+		
+		foreach($alerts as $alert) {
+			$json[] = $alert->to_json();
+		}
+		
+		return $json;
+   	}
 }
 
 
 
 class Alert extends Post {
-	public $defaults = array('post_type' => 'cpt-alert');
+	public $defaults = array('post_type' => 'cpt-alert', 'post_status'=>'publish');
 	
 	public function save() {
 		
@@ -312,26 +411,29 @@ class Alert extends Post {
 			$this->attributes['post_meta']['vehicle_id'] = $this->attributes['vehicle_id'];
 			unset($this->attributes['vehicle_id']);
 		}
+		
+		$this->attributes['post_content'] = $this->render_content();
 				
 		parent::save();
 	}
 	
-	protected function render_content() {
+	protected function render_content($vars = array()) {
 		// Get our Mustache template and render it
 		$template_name = 'alert'.$this->post_meta['alert_type'];
-		$vars = $this->get_vars();
+		$vars = $vars + $this->get_vars();
 		
 		// Get our user information...
 		$client = new Client(array('id'=>$this->post_meta['user_id']));
 		$client->fetch();
 		$client_vars = $client->get_vars();
 		
-		$vars = $vars + $client_vars;
+		$hitfigure = HitFigure::getInstance();
+		$vars = $hitfigure->get_wp_data() + $vars + $client_vars;
 		
-		$content = display_mustache_template($template_name, $vars);
-		$this->post_content = $content;
+		$content = display_mustache_template($template_name, $vars, false);
+		return $content;
 	}
-	
+		
 	public function get_vars() {
 		$vars = array(
 			'alert_title' 	=> $this->post_title,
@@ -356,12 +458,23 @@ class Alert extends Post {
 			return;
 		}
 		
-		$message 	= $this->post_content;
+		$vehicle_id = $this->post_meta['vehicle_id'];
+		$vehicle = new Vehicle(array('id'=>$vehicle_id));
+		
+		$hitfigure = HitFigure::getInstance();
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$this->post_content, 
+			'is_alert'		=>true,
+			'vehicle_id'	=>$vehicle_id,
+			'vehicle_name'	=>$vehicle->post_title
+		));
+		
+		$message 	= display_mustache_template('emailshell', $vars, false);
 		$to 		= $client->data->user_email;
 		$subject	= $this->post_title;
 		
 		$hitfigure = HitFigure::getInstance();
-		$hitfigure->send_email($subject, $message, $to);
+		$hitfigure->send_email($subject, $message, $to, "HitFigure@Hitfigure.com", $this->post_content);
 	}
 	
 	public function dismiss() {
@@ -371,17 +484,42 @@ class Alert extends Post {
 		$this->save();
 	}
 	
+	public function to_json() {
+		$vehicle = new Vehicle(array('id'=>$this->post_meta['vehicle_id']));
+		$vehicle->fetch();
+	
+		$json = array(
+			'alert_title'	=>$vehicle->get_full_name(),
+			'view_alert' 	=>display_mustache_template('viewitemlink', array('url'=>'/admin/alert/'.$this->id, 'text'=>'View Alert'), False),
+			'alert_type'	=>$this->alert_type() // Pretty version
+		);
+		return $json;
+	}
+	
+	protected function alert_type() {
+		return '';
+	}
+	
 }
 
 class AlertVehicle extends Alert {
 
 	public function save() {
-		$vehicle_id = $this->attributes['vehicle_id'];
-		$vehicle = VehicleCollection::get_by_id($vehicle_id);
-		$vehicle_name = $vehicle->post_meta['vehicle_year'] . ' ' . $vehicle->post_meta['vehicle_make'] . ' ' . $vehicle->post_meta['vehicle_model'];
+		$vehicle_id 	= $this->attributes['vehicle_id'];
+		$vehicle		= new Vehicle(array('id'=>$vehicle_id));
+		$vehicle->fetch();
+		$vehicle_name 	= $vehicle->post_meta['vehicle_year'] . ' ' . $vehicle->post_meta['vehicle_make'] . ' ' . $vehicle->post_meta['vehicle_model'];
 		$this->attributes['post_title'] .= ' '.$vehicle_name;
 
 		parent::save();
+	}
+
+	protected function render_content($vars = array()) {
+		$vehicle_id = $this->attributes['post_meta']['vehicle_id'];
+		$vehicle 	= new Vehicle(array('id'=>$vehicle_id));
+		$vehicle->fetch();
+		$vars 		= $vars + $vehicle->post_meta;
+		return parent::render_content($vars);
 	}
 
 }
@@ -391,6 +529,7 @@ class AlertVehicle extends Alert {
 class AlertWon extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
+		'post_status'		=> 'publish',		
 		'post_title'		=> 'Won!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
@@ -400,6 +539,9 @@ class AlertWon extends AlertVehicle  {
 		)
 	);
 	
+	protected function alert_type() {
+		return 'Won';
+	}
 
 }
 
@@ -408,6 +550,7 @@ class AlertWon extends AlertVehicle  {
 class AlertOutbid extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
+		'post_status'		=> 'publish',
 		'post_title'		=> 'Outbid!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
@@ -416,6 +559,11 @@ class AlertOutbid extends AlertVehicle  {
 			'alert_dismissed'	=> false
 		)
 	);
+	
+	protected function alert_type() {
+		return 'Outbid';
+	}	
+	
 }
 
 
@@ -423,6 +571,7 @@ class AlertOutbid extends AlertVehicle  {
 class AlertNewbid extends AlertVehicle  {
 	public $defaults = array(
 		'post_type' 		=> 'cpt-alert',
+		'post_status'		=> 'publish',		
 		'post_title'		=> 'New bid!',		
 		'post_meta'			=> array(
 			'post_content'		=> null,
@@ -431,8 +580,33 @@ class AlertNewbid extends AlertVehicle  {
 			'alert_dismissed'	=> false
 		)
 	);
+	
+	protected function alert_type() {
+		return 'New bid';
+	}
+		
 }
 
+
+
+class AlertNewlead extends AlertVehicle  {
+	public $defaults = array(
+		'post_type' 		=> 'cpt-alert',
+		'post_status'		=> 'publish',		
+		'post_title'		=> 'New lead!',		
+		'post_meta'			=> array(
+			'post_content'		=> null,
+			'alert_type'		=> 'newlead',
+			'alert_status'		=> 'blue',
+			'alert_dismissed'	=> false
+		)
+	);
+
+	protected function alert_type() {
+		return 'New lead';
+	}	
+	
+}
 
 
 /* Bid Models */

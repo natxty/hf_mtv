@@ -47,7 +47,7 @@ function dashboard( $request ) {
 	
 	//print_r($existing_attachments);
 	
-	
+	/*
 	$f = new \FormHelper('form');
 	$f->method = 'POST';
 	$f->enctype = 'multipart/form-data';
@@ -83,9 +83,14 @@ function dashboard( $request ) {
 		echo $f->render();
 	}
 	
+	$vehicle = new \hitfigure\models\Vehicle();
+	print_r($vehicle);
+	$vehicle->save();
+	print_r($vehicle);
+	*/
 	
-	
-	
+	$alert = \hitfigure\models\AlertCollection::new_alert('newlead', 1, 749);
+	print_r($alert);
 }
 
 
@@ -100,6 +105,8 @@ function view_leads( $request ) {
 	
 	
 }
+
+
 
 function ajax_lead_data( $request ) {
 	// Return Ajax data to datatables
@@ -184,8 +191,38 @@ function ajax_client_data( $request ) {
 
 
 
+function alert( $request ) {
+	$id = $request['id']; // Alert id
+
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
+	$adminvars = $hitfigure->admin->view_alert($id);	
+
+	$vars = $hitfigure->template_vars($adminvars);
+	display_mustache_template('alert', $vars);
+} 
+
+
+
 function view_alerts( $request ) {
 	// View Alerts
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
+	$vars = $hitfigure->template_vars(); 
+	display_mustache_template('viewalerts', $vars);	
+}
+
+
+
+function ajax_alert_data( $request ) {	
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
+	$alertdata = $hitfigure->admin->get_alert_data();
+
+ 	echo json_encode($alertdata);
 }
 
 

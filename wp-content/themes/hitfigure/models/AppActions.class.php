@@ -49,6 +49,38 @@ class AppActions {
 				
 				// Then... well, the rest we can do in our cron script...				
 				break;
+			
+			case 'new_lead':
+				$vehicle 	= $args['vehicle']; // Vehicle model instance
+				$dealers	= $args['dealers']; // '$dealers' is our DB wp_closestdealers results
+				
+				$ids = array();
+				$dealer_vars = array();
+				
+				foreach ($dealers as $dealer) {
+					//print_r($dealer);			
+					$dealer_id 			= $dealer->dealer_id;
+					$manufacturer_id 	= $dealer->manufacturer_id;
+					
+					if ($manufacturer_id && !in_array($manufacturer_id, $ids)) {
+						$ids[] = $manufacturer_id;
+					}
+					if ($dealer_id && !in_array($dealer_id, $ids)) {
+						$ids[] 				= $dealer_id;
+						$client				= new Dealer(array('id'=>$dealer_id));
+						$client->fetch();
+						$dealer_vars[]		= $client->get_vars();
+					}					
+				}
+				
+				foreach ($ids as $id) {
+					AlertCollection::new_alert('newlead', $id, $vehicle->id);
+				}
+				
+				// then... send a confirmation to the seller
+				$vehicle->seller_confirm_new_lead_email($dealer_vars);
+				
+				break;
 		}
 	
 	}

@@ -8,6 +8,7 @@ $url_patterns = array(
 	'/admin\/new\/(?P<type>manufacturer|dealer|salesperson|accountant)/'			=> 'hitfigure\views\new_client',
 	'/admin\/edit\/(?P<id>[\d]+)/'							=> 'hitfigure\views\edit_client',
 	'/admin\/alerts/'										=> 'hitfigure\views\view_alerts',
+	'/admin\/alert\/(?P<id>[\d]+)/'							=> 'hitfigure\views\alert',
 	'/admin\/bid\/(?P<id>[\d]+)/'							=> 'hitfigure\views\bid',
 	'/admin\/email\/(?P<id>[\d]+)/'							=> 'hitfigure\views\email_seller',
 	'/how-it-works/'										=> 'hitfigure\views\how_it_works',
@@ -16,6 +17,7 @@ $url_patterns = array(
 	'/colin/'												=> 'hitfigure\views\colin',
 	'/ajax_view_leads/' 									=> 'hitfigure\views\ajax_lead_data',
 	'/ajax_view_clients\/(?P<type>manufacturer|dealer|salesperson|accountant)/'	=> 'hitfigure\views\ajax_client_data',
+	'/ajax_view_alerts/'									=> 'hitfigure\views\ajax_alert_data',
 	'/(?P<slug>[\w-\/]+)\/?$/' 								=> 'hitfigure\views\page'
 );
 
