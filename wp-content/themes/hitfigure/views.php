@@ -100,7 +100,20 @@ function view_leads( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 		
-	$vars = $hitfigure->template_vars();
+	$vars = $hitfigure->template_vars(array('is_all'=>True));
+	display_mustache_template('viewleads', $vars);
+	
+	
+}
+
+
+
+function view_won_leads( $request ) {
+	// View Leads
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+		
+	$vars = $hitfigure->template_vars(array('is_all'=>False));
 	display_mustache_template('viewleads', $vars);
 	
 	
@@ -109,11 +122,17 @@ function view_leads( $request ) {
 
 
 function ajax_lead_data( $request ) {
+	$type = $request['type'];
+
 	// Return Ajax data to datatables
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
-	$leaddata = $hitfigure->admin->get_lead_data();	
+	if ($type=='won') {
+		$leaddata = $hitfigure->admin->get_won_lead_data();	
+	} else {
+		$leaddata = $hitfigure->admin->get_lead_data();		
+	}
  	echo json_encode($leaddata);
 }
 

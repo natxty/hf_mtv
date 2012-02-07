@@ -239,7 +239,7 @@ class HitFigure {
 		
 		$this->trigger_action('new_lead', array('vehicle'=>$vehicle,'dealers'=>$results));
 		
-		return $results;
+		return $vehicle;
 	}
 	
 	public function trigger_action($type, $args) {

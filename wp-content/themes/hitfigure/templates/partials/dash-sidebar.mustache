@@ -5,9 +5,15 @@
 						<li><a href="/admin/dashboard">Dashboard</a></li>
 						{{/hide_dashboard}}
 						
+						<!-- class="current" -->
+						
 						{{^hide_leads}}
-						<li class="current"><a href="/admin/leads">View Leads</a></li>
+						<li><a href="/admin/leads">View Leads</a></li>
 						{{/hide_leads}}
+
+						{{^hide_won_leads}}
+						<li><a href="/admin/won">View Won Leads</a></li>
+						{{/hide_won_leads}}
 
 						{{^hide_alerts}}
 						<li><a href="/admin/alerts">View Alerts</a></li>

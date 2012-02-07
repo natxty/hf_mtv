@@ -2,6 +2,7 @@
 
 namespace hitfigure\views;
 use hitfigure\models\HitFigure;
+use hitfigure\models\Vehicle;
 
 
 
@@ -502,8 +503,11 @@ function how_it_works() {
 
             //get the data in!
             $hitfigure = HitFigure::getInstance();
-            if($saving = $hitfigure->new_vehicle($args)) {				
+            if($vehicle = $hitfigure->new_vehicle($args)) {				
 				// Redirect here... cuz we're all done!
+				$v_id = $vehicle->id;
+				header("Location: " . get_bloginfo('siteurl') . "/thank-you/" . $v_id);
+
 			}
 
 		}
@@ -524,6 +528,20 @@ function how_it_works() {
 	*/
 	
 	display_mustache_template('sellerform', $vars);
+}
+
+function thank_you( $request ) {
+	
+	$id 	= $request['id']; // Lead (vehicle) ID
+
+	
+	$hitfigure = HitFigure::getInstance();
+	$adminvars = $hitfigure->admin->view_lead($id);	
+	$vars = $hitfigure->template_vars($adminvars);
+	
+	
+	display_mustache_template('thankyou', $vars);
+	
 }
 
 function ajax_form_data($request) {

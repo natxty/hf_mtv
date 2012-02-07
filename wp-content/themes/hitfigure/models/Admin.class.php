@@ -87,13 +87,15 @@ class Admin {
 			$this->add_business_name_input($f);
 		}
 		
-		$this->add_basic_info_inputs($f);
+		$this->add_basic_info_inputs($f, $client);
 		
 		if ( !in_array($type, $dealer_employees) ) {
 			$this->add_additional_info_inputs($f);		
 		}
 		
-		$this->add_account_inputs($f);
+		$this->add_alert_email_opts($f);
+		
+		$this->add_account_inputs($f, $id);
 		
 		$b = new \Button('submit');
 		$b->setProperties(array(
@@ -105,14 +107,14 @@ class Admin {
 		
 		
 		if ($id) { // Do some additional stuff if we're editing
-			$f->password->required = False;
-			$f->confirmpassword->required = False;
-			$f->user_login->required = False;
-			$f->user_login->readonly = True;
+			$f->password->required 			= False;
+			$f->confirmpassword->required 	= False;
+			$f->user_login->required 		= False;
+			$f->user_login->readonly 		= True;
 		}
 		
 		
-		
+				
 		if ( isset($_REQUEST['submit']) ) {
 			
 			$f->applyUserInput(True);
@@ -124,14 +126,17 @@ class Admin {
 			
 			} else {
 				// Validation Success, do our post-form processing
-				$client = Null;
+				$client = null;
 				
 				if ( !in_array($type, $dealer_employees) ) {
 					$args = $this->get_new_client_form_args($f, $id);
 				} else {
 					$args = $this->get_new_client_form_args_dealer_employee($f, $id);
 				}
-							
+				
+				$args = $args + $this->get_new_client_form_args_email_opts($f);
+				
+
 				switch($type) {
 					case 'manufacturer':
 						$client = new Manufacturer($args);
@@ -167,10 +172,51 @@ class Admin {
 				} else {
 					$this->set_edit_client_form_values_dealer_employee($f, $client);
 				}
+				
+				$this->set_edit_client_form_values_email_opts($f, $client);
 			}	
 		}	
 	
 		return $f->render();
+	}
+	
+	
+	
+	protected function get_alert_email_opt_list() {
+		return array(
+			'newbid'	=>'New Bids',
+			'outbid'	=>'Outbid',
+			'newlead'	=>'New Leads',
+			'won'		=>'Won Leads'
+		);
+	}
+	
+	
+	
+	protected function add_alert_email_opts($f) {
+		$opt_list = $this->get_alert_email_opt_list();
+		foreach( $opt_list as $name=>$text) {
+			$this->get_alert_email_radioboxes($text, 	'alert_email_opt_'.$name, 	$f);
+		}
+	}
+	
+	
+	
+	protected function get_alert_email_radioboxes($text, $id, $f) {
+	    $l = new \Label($id.'_label');
+	    $l->setProperties(array(
+							  'text' => $text
+	                      ));
+	    $f->add($l);		
+		
+	    $r = new \RadioGroup($id);
+		$r->setProperties(array(
+			'name'=>$id
+		));
+	
+		$r->add_radio_button($id.'_y', array('text'=>'Yes', 'value'=> 'Yes'));
+		$r->add_radio_button($id.'_n', array('text'=>'No', 'value'=> 'No'));
+	    $f->add($r);
 	}
 
 
@@ -187,7 +233,7 @@ class Admin {
 	
 	
 	
-	protected function add_basic_info_inputs($f) {
+	protected function add_basic_info_inputs($f, $client) {
 		$i = new \Input('first_name');
 		$i->setProperties(array(
 			'name' =>'first_name',
@@ -209,8 +255,8 @@ class Admin {
 			'name' =>'user_email',
 			'text' =>'Email',
 			'required'=>True,
-			'validate_func'=>function($self) use ($id) {
-				if ( !$id && email_exists($self->value) ) {
+			'validate_func'=>function($self) use ($client) {
+				if ( ($client && ($client->data->user_email!=$self->value)) && email_exists($self->value) ) {
 		        	return 'This email address is already registered.';
 		        }
 		        return True;
@@ -271,7 +317,7 @@ class Admin {
 	
 	
 	
-	protected function add_account_inputs($f) {
+	protected function add_account_inputs($f, $id) {
 		$i = new \Input('user_login');
 		$i->setProperties(array(
 			'name' =>'user_login',
@@ -375,6 +421,32 @@ class Admin {
 		$f->user_email->value		= $client->data->user_email;
 		$f->user_login->value		= $client->data->user_login;
 	}
+	
+	
+	
+	protected function get_new_client_form_args_email_opts($f) {
+		$args = array();
+		$opt_list = $this->get_alert_email_opt_list(); 
+		
+		foreach($opt_list as $name=>$text) {
+			$id = 'alert_email_opt_'.$name;
+			$args[$id] = $f->{$id}->value;
+		}
+		
+		return $args;
+	}
+
+
+
+	protected function set_edit_client_form_values_email_opts($f, $client) {
+		$opt_list = $this->get_alert_email_opt_list(); 
+		
+		foreach($opt_list as $name=>$text) {
+			$id = 'alert_email_opt_'.$name;
+			$value = $client->{$id};
+			$f->{$id}->value = $value ? $value : 'Yes';
+		}	
+	}
 
 
 
@@ -391,26 +463,31 @@ class Admin {
 	
 	
 	public function view_lead( $id ) {
-	
 		$vehicle = new Vehicle(array('id'=>$id));	
 		$vehicle->fetch();
-		
+	
+		return $this->get_view_lead_vars($vehicle);
+	}
+	
+	
+	
+	protected function get_view_lead_vars( $vehicle ) {		
 		$min_amount 			= BidCollection::getMinAmount($vehicle->id);
 		$highest_amount 		= BidCollection::getHighestBid($vehicle->id);
 		$your_highest_amount 	= BidCollection::yourHighestBid($vehicle->id);
 		$bid_status 			= $this->bid_status_text(BidCollection::bidStatus($vehicle->id));
 		
 		$bidvars = array(
-			'timeleft'				=>VehicleCollection::time_left($id),
-			'min_amount'			=>money_format('%i', $min_amount),
-			'highest_amount'		=>money_format('%i', $highest_amount),
-			'your_highest_amount'	=>money_format('%i', $your_highest_amount),
+			'timeleft'				=>VehicleCollection::time_left($vehicle->id),
+			'min_amount'			=>money_format('$%i', $min_amount),
+			'highest_amount'		=>money_format('$%i', $highest_amount),
+			'your_highest_amount'	=>money_format('$%i', $your_highest_amount),
 			'bid_status'			=>$bid_status
 		);
 		
 		$attachments = array('attachments'=>$vehicle->get_attachments());
 			
-		return $vehicle->attributes + $vehicle->post_meta + $bidvars + $attachments;
+		return $vehicle->get_vars() + $bidvars + $attachments;	
 	}
 	
 	
@@ -432,12 +509,18 @@ class Admin {
 		}
 		
 		$alert = $alerts->current();
-		
+
+		return $this->get_view_alert_vars($alert);
+	}
+	
+
+
+	protected function get_view_alert_vars( $alert ) {
 		$vars = array(
 			'alert_message'=>$alert->post_content
 		);
 		
-		return $vars;
+		return $vars;	
 	}
 	
 	
@@ -475,6 +558,28 @@ class Admin {
 		$json = VehicleCollection::get_json_vehicle_data();
 		return array('aaData'=>$json);	
 	}
+	
+	
+	
+	public function get_won_lead_data() {
+		return $this->get_won_lead_data_vars();
+	}
+
+
+
+	protected function get_won_lead_data_vars() {
+		$args = array(
+			'meta_query'=>array(
+					array(
+						'key' 		=> 'lead_winner',
+						'value'	 	=> $this->user->id
+					)				
+			)
+		);
+		$json = VehicleCollection::get_json_vehicle_data($args, false);
+		return array('aaData'=>$json);	
+	}
+	
 	
 	
 	
@@ -531,7 +636,7 @@ class Admin {
 				if ( !isset($_REQUEST['confirm']) && !isset($_REQUEST['revise']) && !isset($_REQUEST['submit']) ) {
 					$f = $this->place_bid_form($id, $min_amount);
 					$bidvars['placing_bid'] = True;
-					$bidvars['min_amount'] = $min_amount;
+					$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
 				}
 				
 				if ( isset($_REQUEST['submit'])	) {
@@ -541,11 +646,11 @@ class Admin {
 						// Probably do nothing, input validation will catch it
 						$bidvars['placing_bid'] = True;
 						$bidvars['errors'] = True;
-						$bidvars['min_amount'] = $min_amount;
+						$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
 					} else { // Validated!
 						$bidvars['confirming_bid'] = True;
 						$yourbidamount = $f->amount->value;
-						$bidvars['yourbidamount'] = $yourbidamount;
+						$bidvars['yourbidamount'] = money_format('$%i', $yourbidamount+0);
 						$f = $this->confirm_bid_form($id);
 					}
 				} elseif ( isset($_REQUEST['confirm']) ) {
@@ -562,19 +667,19 @@ class Admin {
 					));
 					
 					$bidvars['bid_placed'] = True;
-					$bidvars['yourbidamount'] = $yourbidamount;
+					$bidvars['yourbidamount'] = money_format('$%i', $yourbidamount+0);
 					$f = null;
 				} elseif ( isset($_REQUEST['revise']) ) {
 					// Back to the top...
 					$bidvars['placing_bid'] = True;
-					$bidvars['min_amount'] = $min_amount;
+					$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
 					$f =$this->place_bid_form($id, $min_amount);
 				}
 			}
 		}
 		
 		$form = $f ? $f->render() : '';
-		$vars = array('form'=>$form) + $vehicle->attributes + $vehicle->post_meta + $bidvars;
+		$vars = array('form'=>$form) + $vehicle->get_vars() + $bidvars;
 		
 		return $vars;	
 	}
@@ -593,7 +698,7 @@ class Admin {
 			'validate_func'=>function($self) use ($min_amount) {
 				// Check if this is more than Min Amount
 				$amount = BidCollection::convertAmount($self->value);
-				if ($amount <= $min_amount) {
+				if ($amount < $min_amount) {
 					return "Amount must be higher than the minimum amount";
 				}
 				return True;

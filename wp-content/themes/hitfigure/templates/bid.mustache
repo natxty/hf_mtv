@@ -4,6 +4,12 @@
 
 {{>containerstart}}
 
+<div>
+	<small>
+	<a href="{{vehicle_url}}">Return to this vehicles details</a>
+	</small>
+</div>
+
 {{^lead_found}}
 	<!-- No Lead Found... Output Message -->
 {{/lead_found}}
@@ -19,15 +25,15 @@
 	{{/errors}}
 
 	{{#placing_bid}}
-		{{min_amount}}
+		<strong>Minimum Bid:</strong> {{min_amount}}
 	{{/placing_bid}}
 	
 	{{#confirming_bid}}
-		{{yourbidamount}}
+		<strong>Confirm bid for {{yourbidamount}}</strong>
 	{{/confirming_bid}}
 	
 	{{#bid_placed}}
-		{{yourbidamount}}
+		<strong>Bid placed for {{yourbidamount}}</strong>
 	{{/bid_placed}}
 	
 	{{&form}}<!-- changes depending on what stage you're in -->

@@ -43,17 +43,20 @@
 		{{#timeleft}} {{!Display this block if this lead hasn't expired}}
 			<h3 class="lead-title pl20">Time Left to make an Offer<br />
 			<span>{{timeleft}}</span></h3>
-			<span>Status:{{bid_status}}</span></h3>
-			<span>Highest Bid: {{highest_amount}}</span></h3>
-			<span>Your Current Bid: {{your_highest_amount}}</span></h3>
+			<dl>
+				<dt>Status:</dt>
+					<dd>{{bid_status}}</dd>
+				<dt>Highest Bid:</dt>
+					<dd>{{highest_amount}}</dd>
+				<dt>Your Current Bid:</dt>
+					<dd>{{your_highest_amount}}</dd>
+			</dl>
 			<div class="lead-offer-box pl20">
-				<h3 class="lead-title">Make an Offer</h3>
-				
-				<input class="button" type="submit" value="Submit Offer" tabindex="93">
+				<h3 class="lead-title"><a href="/admin/bid/{{vehicle_id}}">Make an Offer</a></h3>
 			</div>
 		{{/timeleft}}
 		{{^timeleft}} {{!Display this block if the lead has expired}}
-			EXPIRED!!!
+			<h3 class="lead-title pl20">This lead has expired.</h3>
 		{{/timeleft}}
 	<!-- end left col -->
 	</div>

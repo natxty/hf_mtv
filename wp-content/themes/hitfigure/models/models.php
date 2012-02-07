@@ -48,15 +48,16 @@ class VehicleCollection extends PostCollection {
 		$vehicle = self::is_active($id);
 		if ($vehicle) {
 			return $vehicle->time_left();
-		} else {
-			return 'Expired';
-		}
+		}	
 	}	
 	
-	public static function get_json_vehicle_data() {		
+	public static function get_json_vehicle_data($args = array(), $active = true) {		
 		$vehicles_json = array();
-		$vehicles = self::active_leads();
-		
+		if ($active) {
+			$vehicles = self::active_leads($args);
+		} else {
+			$vehicles = self::filter($args);
+		}
 		foreach ($vehicles as $vehicle) {
 			$vehicles_json[] = $vehicle->to_json();
 		}
@@ -83,6 +84,8 @@ class Vehicle extends Post {
     	
     	$query = "CALL get_closestdealers($vehicle_id, $vehicle_zipcode)";    	
     	$results = $wpdb->get_results("CALL get_closestdealers($vehicle_id, $vehicle_zipcode);");
+    	
+    	
     	$wpdb->db_connect(); // Brute force reset after stored procedure call
     	return $results; 	
 	}
@@ -191,8 +194,21 @@ class Vehicle extends Post {
 		}
 	}	
 	
+	public function get_vars() {
+		$vars = $this->post_meta;
+		$vars = $vars + array(
+			'vehicle_title'	=>$this->post_title,
+			'vehicle_id'	=>$this->id,
+			'vehicle_url'	=> get_bloginfo('wpurl').'/admin/lead/' . $this->id
+		);
+		
+		return $vars;
+	}
+	
 	public function seller_new_bid_email($bid) {
 		// Send off an email to the seller
+		$hitfigure = HitFigure::getInstance();
+		
 		$vars = array('time_left'=>$this->time_left(), 'vehicle_name'=>$this->post_title) + $this->post_meta + $bid->post_meta;
 		$vars['amount'] = money_format('$%i', $vars['amount']);
 		
@@ -200,7 +216,8 @@ class Vehicle extends Post {
 
 		$vars = $hitfigure->get_wp_data(array(
 			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title
+			'vehicle_name'	=>$this->post_title,
+			'hf_says'		=>"New bid on"
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 		
@@ -217,7 +234,8 @@ class Vehicle extends Post {
 		
 		$vars = $hitfigure->get_wp_data(array(
 			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title
+			'vehicle_name'	=>$this->post_title,
+			'hf_says'		=>"Bidding has closed on"
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 		
@@ -234,7 +252,8 @@ class Vehicle extends Post {
 		
 		$vars = $hitfigure->get_wp_data(array(
 			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title
+			'vehicle_name'	=>$this->post_title,
+			'hf_says'		=>"New vehicle submitted"
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 
@@ -466,7 +485,8 @@ class Alert extends Post {
 			'message'		=>$this->post_content, 
 			'is_alert'		=>true,
 			'vehicle_id'	=>$vehicle_id,
-			'vehicle_name'	=>$vehicle->post_title
+			'vehicle_name'	=>$vehicle->post_title,
+			'hf_says'		=>$this->alert_type()
 		));
 		
 		$message 	= display_mustache_template('emailshell', $vars, false);
@@ -699,9 +719,9 @@ class BidCollection extends PostCollection {
 
 	public static function yourHighestBid($parent_id) {
 		$hitfigure = HitFigure::getInstance();
-    	$user = $hitfigure->admin->user;
-    	$user_id = $user->id;
-    	$bids = self::filter(array('meta_key'=>'user_id', 'meta_value'=>$user_id, 'parent_id'=>$parent_id, 'posts_per_page'=>1));
+    	$user_id = $hitfigure->admin->user->id;
+
+    	$bids = self::filter(array('meta_key'=>'user_id', 'meta_value'=>$user_id, 'post_parent'=>$parent_id, 'posts_per_page'=>1));
     	if (!count($bids)) {
     		// No Bids Yet...
     		return 0;
@@ -778,7 +798,11 @@ class Client extends User {
 		'city',			
 		'state',			
 		'zipcode',
-		'user_parent'
+		'user_parent', 
+		'alert_email_opt_newbid',
+		'alert_email_opt_newlead',
+		'alert_email_opt_won',
+		'alert_email_opt_outbid'
 	);
 
     public function validate() {       
@@ -854,9 +878,12 @@ class Client extends User {
     
     
     public function can_recieve_alert_for($type) {
-    	// Check user prefs, for now just say... 
-    	return true;
-    }
+    	// Check user prefs
+    	$value = get_user_meta($this->id, 'alert_email_opt_'.$type, true);
+    	if ($value != 'No') { // Not all users will have these set, so assume it's yes
+    		return True;
+    	}
+     }
     
 }
 
@@ -867,10 +894,6 @@ class Client extends User {
 class DealerCollection extends ClientCollection {
 	public static $model 	= "hitfigure\models\Dealer";
 	public static $role 	= "dealer";
-	
-	
-	
-	
 }
 
 
