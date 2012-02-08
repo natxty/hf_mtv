@@ -26,7 +26,7 @@ class Admin {
 
 
 
-	public function dashboard($pagevars) { // Your adventure starts here...
+	public function dashboard() { // Your adventure starts here...
 		$hitfigure = HitFigure::getInstance();
 	
    		$filter = array(
@@ -128,6 +128,8 @@ class Admin {
 			'stats_leading_bids'		=> null,
 			'pgheader'					=> $this->user->business_name
 		);
+		
+		$hitfigure->vars->add($args);
 		
 		return $args;	
 	}

@@ -41,14 +41,18 @@ function dashboard( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
+	//$hitfigure->vars->set_logging(true);
+	
 	$pagevars = array(
 		'title'		=>'Dashboard'
 	);
 	
-	$vars = $hitfigure->admin->dashboard();	
-	$vars = $hitfigure->page_vars($pagevars, $vars);
+
 	
-	display_mustache_template('dashboard', $vars);
+	$hitfigure->admin->dashboard();	
+	$hitfigure->vars->merge('title', 'Dashboard');
+		
+	display_mustache_template('dashboard', $hitfigure->vars->get());
 }
 
 

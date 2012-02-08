@@ -11,7 +11,6 @@ class HitFigure {
 	public static $instance 	= null;
 
 
-
 	private function __construct() {
 		$this->init();
 	}
@@ -31,6 +30,10 @@ class HitFigure {
 	private function init() {
 		$this->app_actions 	= new AppActions();
 		$this->front_end	= new Frontend();
+		$this->vars			= new TemplateVariablesContainer();
+		
+		// Set our default template variables...
+		$this->init_template_vars();
 		
 		// Check if we're logged in...
 		$this->instantiate_admin();
@@ -58,14 +61,19 @@ class HitFigure {
 		}
 				
 		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
+			$this->vars->add_protected('is_admin',True);
 			$this->admin = new Admin();
 		} elseif ( in_array('manufacturer', $roles) ) {
+			$this->vars->add('is_manufacturer',True);
 			$this->admin = new ManufacturerAdmin();
 		} elseif ( in_array('dealer', $roles) ) {
+			$this->vars->add('is_dealer',True);
 			$this->admin = new DealerAdmin();
 		} elseif ( in_array('salesperson', $roles) ) {
+			$this->vars->add('is_salesperson',True);
 			$this->admin = new SalesPersonAdmin();
 		} elseif ( in_array('accountant', $roles) ) {
+			$this->vars->add('is_accountant',True);
 			$this->admin = new AccountantAdmin();
 		}
 		
@@ -73,18 +81,30 @@ class HitFigure {
 	
 	
 	
-	public function template_vars($vars = array()) { // This should possibly be renamed...
+	private function init_template_vars() {
 		if ( $this->admin ) {
-			$vars = $vars + $this->admin->get_admin_vars();
+			$this->vars->add($this->admin->get_admin_vars());
 		}
-		return $this->get_wp_data() + $this->get_header_vars() + $this->get_footer_vars() + $vars;
+		
+		$this->vars->add($this->get_wp_data());
+		$this->vars->add($this->get_header_vars());
+		$this->vars->add($this->get_footer_vars());
+	}
+	
+	
+	
+	// To be removed...here only so everything doesn't break
+	public function template_vars($vars = array()) { 
+		$this->vars->add($vars); 
+		return $this->vars->get();
 	}
 
 
-	
-	public function page_vars($args, $default = array()) {
-		$default = $this->template_vars($default);
-		return array_merge($default,$args);
+
+	// To be removed...here only so everything doesn't break	
+	public function page_vars($args=array(), $default = array()) {
+		$this->vars->merge($args);
+		return $this->vars->get();
 	}
 	
 	

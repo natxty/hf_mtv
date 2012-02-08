@@ -510,7 +510,7 @@ body.page-home #bg-wrapper {
 				float: left;
 			}
 			
-			#wrapper-id_vehicle_known_accidents, #wrapper-id_vehicle_paintwork_performed, #wrapper-id_vehicle_paintwork_needed, #wrapper-id_vehicle_title_owner, #wrapper-id_vehicle_smoker, #wrapper-rb_title_owner_1, #wrapper-rb_title_owner_2, #wrapper-id_vehicle_tires_sixty_percent {
+			#wrapper-id_vehicle_known_accidents, #wrapper-id_vehicle_paintwork_performed, #wrapper-id_vehicle_paintwork_needed, #wrapper-id_vehicle_title_owner, #wrapper-id_vehicle_smoker, #wrapper-rb_title_owner_1, #wrapper-rb_title_owner_2, #wrapper-id_vehicle_tires_sixty_percent, #wrapper-id_vehicle_replacing_if_sold {
 				display: inline;
 				float: right;
 				padding-left: 10px;
@@ -535,7 +535,7 @@ body.page-home #bg-wrapper {
 				height: 18px;
 			}	
 				
-			#sub_vehicle_known_accidents, #sub_vehicle_paintwork_performed, #sub_vehicle_painwork_needed {
+			#sub_vehicle_known_accidents, #sub_vehicle_paintwork_performed, #sub_vehicle_paintwork_needed {
 				display: inline-block;
 			}
 			
