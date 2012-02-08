@@ -37,60 +37,18 @@ function faqs( $request ) {
 
 
 
-function dashboard( $request ) {
-	//$attachment_meta = get_post_meta(7, '_attachments', True );
-	//print_r(unserialize(base64_decode($attachment_meta)));
+function dashboard( $request ) {	
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
 	
-	//print_r(attachments_get_attachments(7));
+	$pagevars = array(
+		'title'		=>'Dashboard'
+	);
 	
-	//$existing_attachments = get_post_meta( 7, '_attachments', false );
+	$vars = $hitfigure->admin->dashboard();	
+	$vars = $hitfigure->page_vars($pagevars, $vars);
 	
-	//print_r($existing_attachments);
-	
-	/*
-	$f = new \FormHelper('form');
-	$f->method = 'POST';
-	$f->enctype = 'multipart/form-data';
-	
-	$i = new \FileInput('myfileinput');
-	$i->setProperties(array(
-		'name'=>'myfileinput'
-	));
-	$f->add($i);
-	
-	
-	$b = new \Button('submit');
-	$b->setProperties(array(
-		'name'=>'submit',
-		'text'=>'Submit'
-	));
-	$f->add($b);
-	
-	if (isset($_REQUEST['submit'])) {
-		$f->applyUserInput(True);
-		$path = $i->save();
-		
-		$args = array(	
-			'post_title'		=>'Test Vehicle',
-			'seller_zipcode'	=> 91107, 
-			'attachments'		=> array($path)
-			);
-
-		$hitfigure = HitFigure::getInstance();
-		$results = $hitfigure->new_vehicle($args);
-		print_r($results);
-	} else {
-		echo $f->render();
-	}
-	
-	$vehicle = new \hitfigure\models\Vehicle();
-	print_r($vehicle);
-	$vehicle->save();
-	print_r($vehicle);
-	*/
-	
-	$alert = \hitfigure\models\AlertCollection::new_alert('newlead', 1, 749);
-	print_r($alert);
+	display_mustache_template('dashboard', $vars);
 }
 
 
@@ -99,8 +57,14 @@ function view_leads( $request ) {
 	// View Leads
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+
+	$pagevars = array(
+		'title'		=>'View Leads',
+		'pgheader'	=>'View Leads',
+		'is_all'	=>True
+	);
 		
-	$vars = $hitfigure->template_vars(array('is_all'=>True));
+	$vars = $hitfigure->page_vars($pagevars);
 	display_mustache_template('viewleads', $vars);
 	
 	
@@ -113,7 +77,13 @@ function view_won_leads( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 		
-	$vars = $hitfigure->template_vars(array('is_all'=>False));
+	$pagevars = array(
+		'title'		=>'View Won Leads',
+		'pgheader'	=>'View Won Leads',
+		'is_all'	=>False
+	);
+		
+	$vars = $hitfigure->page_vars($pagevars);
 	display_mustache_template('viewleads', $vars);
 	
 	
@@ -265,4 +235,12 @@ function email_seller( $request ) {
 	// Email Seller
 	$id 	= $request['id']; // Lead (vehicle) ID
 	echo $id;
+}
+
+
+
+function zamboni( $request ) {
+	// =^_^= //
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->cron();	
 }

@@ -44,6 +44,13 @@ class VehicleCollection extends PostCollection {
 		return $vehicles;
 	}
 	
+	public static function registered_active_leads($args = array()) {
+		add_filter( 'posts_where', 'hitfigure\models\filter_where_registered_for_lead' );
+		$vehicles = self::active_leads($args);
+		remove_filter( 'posts_where', 'hitfigure\models\filter_where_registered_for_lead' );		
+		return $vehicles;
+	}
+	
 	public static function time_left( $id ) {
 		$vehicle = self::is_active($id);
 		if ($vehicle) {
@@ -63,6 +70,13 @@ class VehicleCollection extends PostCollection {
 		}
 		
 		return $vehicles_json;
+	}
+	
+	public static function expired_leads($args = array()) {
+		add_filter( 'posts_where', 'hitfigure\models\filter_where_48hours_past');
+		$vehicles = self::filter($args);
+		remove_filter( 'posts_where', 'hitfigure\models\filter_where_48hours_past' );
+		return $vehicles;		
 	}
 		
 }
@@ -197,12 +211,23 @@ class Vehicle extends Post {
 	public function get_vars() {
 		$vars = $this->post_meta;
 		$vars = $vars + array(
-			'vehicle_title'	=>$this->post_title,
-			'vehicle_id'	=>$this->id,
-			'vehicle_url'	=> get_bloginfo('wpurl').'/admin/lead/' . $this->id
+			'vehicle_title'		=>$this->post_title,
+			'vehicle_name'		=>$this->post_title,
+			'vehicle_id'		=>$this->id,
+			'vehicle_url'		=>$this->get_url(),
+			'vehicle_post_date'	=>$this->get_post_date(),
+			'vehicle_time_left'	=>$this->time_left()
 		);
 		
 		return $vars;
+	}
+	
+	public function get_post_date($format="m/d/Y h:i") {
+		return date($format, strtotime($this->post_date));
+	}
+	
+	public function get_url() {
+		return get_bloginfo('wpurl').'/admin/lead/' . $this->id;
 	}
 	
 	public function seller_new_bid_email($bid) {
@@ -226,9 +251,12 @@ class Vehicle extends Post {
 	}
 	
 	public function seller_won_bid_email($client) {
-		$vars = array('vehicle_name'=>$this->post_title) + $client->get_vars() + $this->post_meta;
 		
-		$message = display_mustache_template('sellerwonbid', $vars, False);
+		$bid = BidCollection::getTopBid($this->id);
+		
+		$vars = array('vehicle_name'=>$this->post_title) + $client->get_vars() + $this->get_vars() + $bid->get_vars();
+		
+		$message = display_mustache_template('sellerbidclosed', $vars, False);
 
 		$hitfigure = HitFigure::getInstance();
 		
@@ -243,10 +271,30 @@ class Vehicle extends Post {
 	}
 	
 	
+	
+	public function seller_no_bid_email() {
+		$vars = array('vehicle_name'=>$this->post_title) + $this->get_vars();
+		
+		$message = display_mustache_template('sellernobids', $vars, False);
+
+		$hitfigure = HitFigure::getInstance();
+		
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$message,
+			'vehicle_name'	=>$this->post_title,
+			'hf_says'		=>"Bidding has closed on"
+		));
+		$html = display_mustache_template('emailshell', $vars, false);
+		
+		$hitfigure->send_email("Bidding has closed on your vehicle!", $html, $this->post_meta['seller_email'], "HitFigure@Hitfigure.com", $message);
+	}	
+	
+	
+	
 	public function seller_confirm_new_lead_email($dealers = array()) {
 		$hitfigure = HitFigure::getInstance();
 		
-		$vars = $hitfigure->get_wp_data() + $this->post_meta + array('dealers'=>$dealers);
+		$vars = $hitfigure->get_wp_data() + $this->get_vars() + array('dealers'=>$dealers);
 		
 		$message = display_mustache_template('sellerconfirmnewlead', $vars, False);
 		
@@ -755,6 +803,13 @@ class BidCollection extends PostCollection {
 
 class Bid extends Post {
 	public $defaults = array('post_type' => 'cpt-bid');
+	
+	public function get_vars() {
+		return array(
+			'bid_amount'=>money_format('$%i', $this->post_meta['amount'])
+		);
+	}
+	
 }
 
 

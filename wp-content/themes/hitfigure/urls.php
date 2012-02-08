@@ -15,12 +15,14 @@ $url_patterns = array(
 	'/how-it-works/'										=> 'hitfigure\views\how_it_works',
 	'/thank-you\/(?P<id>[\d]+)/'							=> 'hitfigure\views\thank_you',
 	'/faqs/'												=> 'hitfigure\views\faqs',
+	'/contact/'												=> 'hitfigure\views\contact',
 	'/homepage/'											=> 'hitfigure\views\homepage',
 	'/colin/'												=> 'hitfigure\views\colin',
 	'/ajax_view_leads\/(?P<type>all|won)/' 					=> 'hitfigure\views\ajax_lead_data',
 	'/ajax_view_clients\/(?P<type>manufacturer|dealer|salesperson|accountant)/'	=> 'hitfigure\views\ajax_client_data',
 	'/ajax_view_alerts/'									=> 'hitfigure\views\ajax_alert_data',
 	'/zamboni/'												=> 'hitfigure\views\zamboni',
+	'/tests/'												=> 'hitfigure\views\tests',
 	'/(?P<slug>[\w-\/]+)\/?$/' 								=> 'hitfigure\views\page'
 );
 

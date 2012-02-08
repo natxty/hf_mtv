@@ -106,7 +106,20 @@ addPostTypes
 			'publicly_queryable'	=> false,
 			'hierarchical'			=> false,
 			'has_archive'			=> false
-		)
+		),
+		
+		array
+		(
+		 	'post_type_name' 		=> 'cpt-contact',
+			'name'					=> 'Contact',
+			'menu_name'				=> 'Contact',
+			'singular_name'			=> 'Contact',
+			'plural_name'			=> 'Contacts',
+			'public'				=> false,
+			'publicly_queryable'	=> false,
+			'hierarchical'			=> false,
+			'has_archive'			=> false
+		 )
 
 	)
 );

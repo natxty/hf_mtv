@@ -1,0 +1,43 @@
+{{> header-front}}
+
+{{>front-header}}
+
+			<div class="container">
+				<div class="main-content">
+					<h1 class="title">CONTACT</h1>
+					
+					<p><strong>Phone:</strong> (714) 366-1231</p>
+					<p><strong>Email:</strong> <a href="mailto:info@hitfigure.com">info@hitfigure.com</a><br />
+					<br/><br />
+					<h3 class='gform_title'>Send Us a Message</h3>
+					
+					<div class="contact-form-wrapper">
+					
+					{{#submitted}}
+					
+						Thank you for your message. We will get back to you shortly.
+					
+					{{/submitted}}
+					
+					{{#form}} 
+		
+					  <form {{#id}}id="{{id}}"{{/id}} action="{{action}}" method="{{method}}" {{#enctype}}enctype="{{enctype}}"{{/enctype}}>
+					  
+						  {{&id_contact_full_name}}
+						  
+						  {{&id_contact_email}}
+						  
+						  {{&id_contact_message}}
+						  
+						  {{&id_confirm}}
+						  
+					  </form>
+					
+					{{/form}}
+											
+					</div><!-- end contact-form-wrapper -->
+					
+			</div><!-- close container -->
+
+
+{{> footer}} 

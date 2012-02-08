@@ -1,0 +1,50 @@
+
+                                    <!-- // Begin Template Body \\ -->
+                                	<table border="0" cellpadding="10" cellspacing="0" width="600" id="templateBody">
+                                    	<tr>
+                                        	<td valign="top" class="bodyContent">
+                                            
+                                                <!-- // Begin Module: Standard Content \\ -->
+                                                <table border="0" cellpadding="10" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td valign="top">
+                                                            <div>
+																<p>Hello {{user_name}},</p>
+																<p>Great news! The bidding window on the following vehicle has come to an end and you own the highest bid submission.</p>
+																
+																<p>
+																<strong>Vehicle Overview:</strong><br />
+																{{#vehicle_vin}}{{vehicle_vin}}<br />{{#vehicle_vin}}
+																{{vehicle_year}} {{vehicle_make}} {{vehicle_model}}<br />
+																{{vehicle_mileage}}<br />
+																{{vehicle_overalldesc}}<br />
+																</p>
+																<p>
+																<strong>Seller Information:</strong><br />
+																{{seller_firstname}} {{seller_lastname}} {{seller_email}}<br />
+																{{seller_zipcode}}<br />
+																</p>
+																
+															  <img src="{{imgdir}}/email/divider_grey.gif" />
+															  
+															  <h4 class="h4">What's Next?</h4>
+															  
+															  <p>These dealers have the next 48 hours to review the details of your vehicle and submit an offer. We will notify you via email each time a new offer is entered. At the end of 48 hours, we'll provide you with the contact information for the dealer who submitted the top offer and let you know know the amount. This dealer will also receive your contact information, and it's up to you whether to seal the deal or pass on the offer. You're in full control.</p>
+															  <p>So without further adieu, let the bidding begin!</p>
+															  <p>~The HitFigure Team</p>
+															  
+															  <div class="inset">
+															  	<strong>Helpful Resources &raquo;</strong> <a href="{{siteurl}}/faqs/" title="Hitfigure FAQ Page"><img src="{{imgdir}}/email/btn_faq_page.gif" alt="Hitfigure FAQ Page" title="Hitfigure FAQ Page" /></a> <a href="{{siteurl}}/contact/" title="Contact Hitfigure"><img src="{{imgdir}}/email/btn_contact.gif" alt="Contact Hitfigure" title="Contact Hitfigure" /></a>
+															  </div>
+															  
+                                                              <p>Please do not respond to this email. If you need assistance, contact HitFigure using the information found here. We're happy to help..
+														  </div>
+														</td>
+                                                    </tr>
+                                                </table>
+                                                <!-- // End Module: Standard Content \\ -->
+                                            
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!-- // End Template Body \\ -->

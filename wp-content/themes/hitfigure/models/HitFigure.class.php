@@ -29,7 +29,8 @@ class HitFigure {
 
 
 	private function init() {
-		$this->app_actions = new AppActions();
+		$this->app_actions 	= new AppActions();
+		$this->front_end	= new Frontend();
 		
 		// Check if we're logged in...
 		$this->instantiate_admin();
@@ -72,7 +73,7 @@ class HitFigure {
 	
 	
 	
-	public function template_vars($vars = array()) {
+	public function template_vars($vars = array()) { // This should possibly be renamed...
 		if ( $this->admin ) {
 			$vars = $vars + $this->admin->get_admin_vars();
 		}
@@ -81,20 +82,32 @@ class HitFigure {
 
 
 	
+	public function page_vars($args, $default = array()) {
+		$default = $this->template_vars($default);
+		return array_merge($default,$args);
+	}
+	
+	
+	
 	public function get_header_vars($vars = array()) {
 		global $page, $paged;
 	
-		$title  = wp_title( '|', false, 'right' );
-		$title .= get_bloginfo( 'name' );
+		/*
+		 * Seperate title from site_name 
+		 * so we can override title when
+		 * we're not using a WP page/post 
+		 */ 
+		$title  	= wp_title( '', false);
+		$site_name 	= get_bloginfo( 'name' );
 	
 		// Add the blog description for the home/front page.
 		$site_description = get_bloginfo( 'description', 'display' );
 		if ( $site_description && ( is_home() || is_front_page() ) )
-			$title .= " | $site_description";
+			$site_name .= " | $site_description";
 	
 		// Add a page number if necessary:
 		if ( $paged >= 2 || $page >= 2 )
-			$title .= ' | ' . sprintf( 'Page %s', max( $paged, $page ) );
+			$site_name .= ' | ' . sprintf( 'Page %s', max( $paged, $page ) );
 	
 		$stylesheet = get_bloginfo( 'stylesheet_url' );
 		$body_class = get_body_class();
@@ -106,6 +119,7 @@ class HitFigure {
 		
 		return $vars + array(
 			'title'			=> $title,
+			'site_name'		=> $site_name,
 			'stylesheet'	=> $stylesheet,
 			'body_class'	=> $body_class,
 			'wp_head'		=> $wp_head
@@ -190,10 +204,9 @@ class HitFigure {
 			}
 		}
 		
-		if ($post_meta) {
-			$args['post_meta'] = $post_meta;
-			$args['post_title'] = $post_meta['vehicle_year'] . ' ' . $post_meta['vehicle_make'] . ' ' . $post_meta['vehicle_make'];
-		}
+		$args['post_meta'] 					= $post_meta;
+		$args['post_meta']['winner_id'] 	= 0;
+		$args['post_title'] 				= $post_meta['vehicle_year'] . ' ' . $post_meta['vehicle_make'] . ' ' . $post_meta['vehicle_make'];
 		
 		$vehicle = new Vehicle($args);
 		$vehicle->save();
@@ -235,7 +248,7 @@ class HitFigure {
 		 */
 		$results = $vehicle->save_dealers(); 
 		
-		// Do something with the results here... like send emails and crap... but for now just return them...
+		// Do something with the results here... like send emails and crap... 
 		
 		$this->trigger_action('new_lead', array('vehicle'=>$vehicle,'dealers'=>$results));
 		
@@ -305,5 +318,48 @@ $message
    	 	
    	 	mail($to, $subject, $body, $headers);
 	}
+	
+	
+	
+	public function cron() {		
+		$args = array(
+			'meta_query' => array(
+					array(
+						'key' 		=> 'winner_id',
+						'value'	 	=> 1,
+						'compare'	=> '<',
+						'type'		=> 'NUMERIC'
+					)
+				)		
+		);
+		
+		//update_post_meta(713, 'winner_id', 0);
+		//super simple way to ensure our cron hit is coming from our source...
+		if($_REQUEST['key'] == '525ef3e7827f41beb11e2e1ac84e0269') { 
+		
+		  $vehicles = VehicleCollection::expired_leads($args);
+		  
+		  foreach ($vehicles as $vehicle) {
+			  
+			  $client = BidCollection::getHighestBidder($parent_id);
+			  
+			  if ($client) {
+				  update_post_meta($vehicle->id, 'winner_id', $client->id);
+				  AlertCollection::new_alert('won', $client->id, $vehicle->id);
+				  $vehicle->seller_won_bid_email($client);
+			  } else {
+				  $vehicle->seller_no_bid_email();
+			  }
+			  
+		  }
+		  
+		} else {
+			
+			header('HTTP/1.1 401 Unauthorized');
+			echo "Error: Unauthorized";
+	
+		}
+	}
+	
 	
 }

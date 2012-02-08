@@ -1,0 +1,18 @@
+<h3 class="lead-title hfwatch">Hitfigure Watch</h3>
+<table id="hitfigurewatch">
+	<!-- <tr>
+		<th>Vehicle</th>
+		<th>Time Left</th>
+		<th>&nbsp;</th>
+	</tr> -->
+	
+	{{#hitfigure_watch}}
+	<tr>
+		<td colspan="2" class="watch_top watch_vehicle_name">{{vehicle_name}}</td>
+	</tr>
+	<tr>
+		<td class="watch_sub watch_vehicle_time_left">{{vehicle_time_left}}</td>
+		<td class="watch_sub watch_vehicle_time_left"><a href="{{vehicle_url}}">View</a>
+	</tr>
+	{{/hitfigure_watch}}
+</table>

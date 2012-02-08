@@ -10,7 +10,11 @@ $(document).ready(function() {
 			{ "mDataProp": "vehicle_make" },
 			{ "mDataProp": "vehicle_mileage" },
 			{ "mDataProp": "view_vehicle" }
-		]
+		],
+		"sDom": 'T<"clear">lfrtip',
+        "oTableTools": {
+            "sSwfPath": "/swf/copy_cvs_xls_pdf.swf"
+        }
 	} );
 
 	var oTable = $('#view-leads-won').dataTable( {
@@ -23,4 +27,5 @@ $(document).ready(function() {
 			{ "mDataProp": "view_vehicle" }
 		]
 	} );
+	
 } );

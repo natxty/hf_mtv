@@ -12,7 +12,7 @@ namespace hitfigure\models;
  
 class Admin {
 	public function __construct() {
-		$this->user = UserCollection::get_current();
+		$this->user = ClientCollection::get_current();
 	}
 	
 	
@@ -22,7 +22,116 @@ class Admin {
 		$hitfigure = HitFigure::getInstance();
 		display_mustache_template('nopriv', $hitfigure->template_vars());
 		exit;
-	}	
+	}		
+
+
+
+	public function dashboard($pagevars) { // Your adventure starts here...
+		$hitfigure = HitFigure::getInstance();
+	
+   		$filter = array(
+			'meta_query' => array(
+					
+					array(
+						'key' 		=> 'user_id',
+						'value'	 	=> $hitfigure->admin->user->id
+					)
+					,array(
+						'key' 		=> 'alert_dismissed',
+						'value'		=> true,
+						'compare' 	=> '!='
+					)
+				),
+			
+			'posts_per_page' => 3
+   		);
+
+		$results = AlertCollection::filter($filter);
+		
+		$current_alerts = array();
+		
+		foreach ($results as $alert) {
+			$vars 					= $alert->get_vars();
+			$vehicle_id 			= $alert->post_meta['vehicle_id'];
+			$vehicle 				= new Vehicle(array('id'=>$vehicle_id));
+			$vars['vehicle_url']	= $vehicle->get_url();
+			
+			$current_alerts[] = $vars;
+		}
+		
+		
+		$results = VehicleCollection::registered_active_leads(array('posts_per_page'=>3));
+		
+		$hitfigure_watch = array();
+		
+		foreach ($results as $vehicle) {
+			$hitfigure_watch[] = $vehicle->get_vars();
+		}
+		
+		$stats_unbid_vehicles = array();
+		$stats_active_bids 	= array();
+		$stats_leading_bids = array();
+		
+		global $wpdb;
+		
+		$two_days_ago = date('Y-m-d h:i:s', strtotime('-2 days'));
+		
+		/*
+		$results = 	$wpdb->get_results("
+			SELECT
+				(
+					SELECT 
+						COUNT(*) 
+					FROM 
+					( 
+						SELECT
+							p.ID 
+						FROM 
+							wp_posts as p 
+						INNER JOIN 
+							wp_postmeta as bm 
+						ON 
+							bm.meta_value = 1 
+						INNER JOIN 
+							wp_posts as b 
+						ON 
+							b.ID = bm.post_id
+						WHERE
+							b.post_type = 'cpt-bid'
+							AND
+							bm.meta_key = 'user_id'
+							AND
+							b.post_parent = p.ID
+							AND
+							p.post_status = 'publish'
+							AND
+							post_date > $two_days_ago
+						GROUP BY 
+							p.ID 
+					) as tmp
+				) as stats_active_bids,
+				(
+					SELECT
+						COUNT(*)
+					FROM
+						
+		
+		
+		");
+		*/		
+		
+		$args = array(
+			'current_alerts' 			=> $current_alerts,
+			'hitfigure_watch'			=> $hitfigure_watch,
+			'stats_unbid_vehicles'		=> null,
+			'stats_active_bids'			=> null,
+			'stats_leading_bids'		=> null,
+			'pgheader'					=> $this->user->business_name
+		);
+		
+		return $args;	
+	}
+
 
 
 
@@ -487,7 +596,14 @@ class Admin {
 		
 		$attachments = array('attachments'=>$vehicle->get_attachments());
 			
-		return $vehicle->get_vars() + $bidvars + $attachments;	
+		$vehicle_name 		= $vehicle->post_title;
+		$vehicle_post_date	= $vehicle->get_post_date();
+			
+		$pagevars = array(
+			'pgheader'=>"$vehicle_name <small>$vehicle_post_date</small>"
+		);	
+			
+		return $vehicle->get_vars() + $bidvars + $attachments + $pagevars;	
 	}
 	
 	
@@ -505,7 +621,7 @@ class Admin {
 		));
 		
 		if (!count($alerts)) {
-			$this->no_priv();
+			$this->nopriv();
 		}
 		
 		$alert = $alerts->current();
@@ -571,7 +687,7 @@ class Admin {
 		$args = array(
 			'meta_query'=>array(
 					array(
-						'key' 		=> 'lead_winner',
+						'key' 		=> 'winner_id',
 						'value'	 	=> $this->user->id
 					)				
 			)
@@ -757,6 +873,6 @@ class Admin {
 		$vars['hide_accountant'] 		= True;
 		$vars['hide_add_accountant'] 	= True;
 		
-		return $vars;
+		return $vars + $this->user->get_vars();
 	}
 }

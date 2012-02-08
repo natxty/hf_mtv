@@ -46,9 +46,10 @@ table.dataTable thead th {
 	height: 40px;
 	line-height: 16px;
 	color: #e1e1e1;
-	font-weight: normal;
-	font-size: 16px;
+	font-weight: bold;
+	font-size: 15px;
 	padding: 10px;
+	text-transform: uppercase;
 }
 table.dataTable thead th span {
 	font-size: 13px;

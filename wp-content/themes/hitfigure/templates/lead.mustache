@@ -43,16 +43,14 @@
 		{{#timeleft}} {{!Display this block if this lead hasn't expired}}
 			<h3 class="lead-title pl20">Time Left to make an Offer<br />
 			<span>{{timeleft}}</span></h3>
-			<dl>
-				<dt>Status:</dt>
-					<dd>{{bid_status}}</dd>
-				<dt>Highest Bid:</dt>
-					<dd>{{highest_amount}}</dd>
-				<dt>Your Current Bid:</dt>
-					<dd>{{your_highest_amount}}</dd>
-			</dl>
+			<ul class="lead-status">
+				<li class="lead-st"><span>Status:</span> {{bid_status}}</li>
+				<li class="lead-hb"><span>Highest Bid:</span> {{highest_amount}}</li>
+				<li class="lead-cb"><span>Your Current Bid:</span> {{your_highest_amount}}</li>
+			</ul>
+			
 			<div class="lead-offer-box pl20">
-				<h3 class="lead-title"><a href="/admin/bid/{{vehicle_id}}">Make an Offer</a></h3>
+				<a href="/admin/bid/{{vehicle_id}}" class="button frontFormBtn">Make an Offer</a>
 			</div>
 		{{/timeleft}}
 		{{^timeleft}} {{!Display this block if the lead has expired}}

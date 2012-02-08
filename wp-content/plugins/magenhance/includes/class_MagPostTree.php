@@ -14,16 +14,18 @@ class MagPostTree implements iMagPostTree {
 	public $tree = array();
 
 	public function __construct() {
-		$this->post_type	= 'post';
-		$this->order 		= 'ASC';
-		$this->orderby 		= 'menu_order';
+		$this->post_type		= 'post';
+		$this->order 			= 'ASC';
+		$this->orderby 			= 'menu_order';
+		$this->posts_per_page	= -1;
 	}
 	
 	private function _build_query_args($post_parent=null) {
 		$args = array(
-			'post_type'	=>$this->post_type,
-			'order'		=>$this->order,
-			'orderby'	=>$this->orderby		
+			'post_type'			=>$this->post_type,
+			'order'				=>$this->order,
+			'orderby'			=>$this->orderby,
+			'posts_per_page'	=>$this->posts_per_page
 		);
 		
 		if ( isset($post_parent) )
@@ -45,7 +47,13 @@ class MagPostTree implements iMagPostTree {
 	}
 	
 	public function _child_posts($post,$li) {
-		$child_posts = get_children( array('post_parent'=>$post->ID, 'orderby'=>$this->orderby, 'order'=>$this->order, 'post_type'=>$this->post_type) );
+		$child_posts = get_children( array(
+			'post_parent'	=>$post->ID, 
+			'orderby'		=>$this->orderby, 
+			'order'			=>$this->order, 
+			'post_type'		=>$this->post_type
+			) 
+		);
 
 		foreach( $child_posts as $child_post ) {
 			$_li = array();

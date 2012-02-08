@@ -407,7 +407,7 @@ function how_it_works() {
     $f->add($s);
 
     /* State */
-    $s = new \Select('vehicle_state');
+   /* $s = new \Select('vehicle_state');
     $s->setProperties(array(
 		'id' =>'id_vehicle_state',
 		'name' =>'vehicle_state',
@@ -421,6 +421,9 @@ function how_it_works() {
 	}
 	$f->add($s);
 	
+	*/
+	/* State */
+    $s = state_select_form($id="state", $args = array());
     $f->add($s);
 
     /* Zip Code */
@@ -534,15 +537,149 @@ function thank_you( $request ) {
 	
 	$id 	= $request['id']; // Lead (vehicle) ID
 
+	$hitfigure 		= HitFigure::getInstance();
+	$frontendvars 	= $hitfigure->front_end->thank_you($id);
 	
-	$hitfigure = HitFigure::getInstance();
-	$adminvars = $hitfigure->admin->view_lead($id);	
-	$vars = $hitfigure->template_vars($adminvars);
-	
-	
+	$vars = $hitfigure->template_vars($frontendvars);	
 	display_mustache_template('thankyou', $vars);
 	
 }
+
+/**
+* view tests()
+* simple test page to verify cron
+* TO-DO: delete, but make sure you delete path
+* in urls.php too
+*/
+
+function tests( $request ) {
+	//our simple md5 hash
+	if($_REQUEST['key'] == '525ef3e7827f41beb11e2e1ac84e0269') { 
+		mail('n@magneticcreative.com','cron data test', 'The proper key was sent');
+	}
+}
+
+/**
+* view contact()
+* our simple contact form & processor
+* TO-DO: 
+*/
+
+function contact() {
+
+	
+	$f = new \FormHelper('contact');
+	$f->method = 'POST';
+	
+	/* First Name */
+    $s = new \Input('contact_full_name');
+    $s->setProperties(array(
+		'id' =>'id_contact_full_name',
+		'name' =>'contact_full_name',
+		'text' =>'Your Name',
+		'required'=>True
+	));
+    $f->add($s);
+
+    /* Email */
+    $s = new \Input('contact_email');
+    $s->setProperties(array(
+		'id' 		=>	'id_contact_email',
+		'name' 		=>	'contact_email',
+		'text' 		=>	'Your Email',
+		'required'	=>	True
+	));
+    $f->add($s);
+	
+	/*Message */
+    $s = new \Textarea('contact_message');
+    $s->setProperties(array(
+		'id' 		=>	'id_contact_message',
+		'name' 		=>	'contact_message',
+		'text' 		=>	'Your Message',
+		'required'	=>	True
+	));
+    $f->add($s);
+	
+	/* Button */
+	$b = new \Button('confirm');
+	$b->setProperties(array(
+		'id' => 'id_confirm',
+		'name'	=> 'confirm',
+		'text'	=> 'Confirm'
+	));
+	$f->add($b);
+
+
+	if ( isset($_REQUEST['confirm']) ) {
+		
+		$f->applyUserInput(True);
+		if (!$f->validate()) {
+			// Unset anything private here, but our validation_func's should print errors etc.
+               echo "failed";
+		} else {
+			// Do something on success...
+            /* build our prelim form and test */
+            //echo "succeeeded";
+            extract($_REQUEST);
+            
+            $args = array(
+				'contact_full_name'	=> 	$contact_full_name,
+				'contact_email'		=> 	$contact_email,
+				'contact_message'	=>	$contact_message
+
+            );
+
+            /**
+			* TO-DO: Save contact via WP method...
+			**/
+			
+			$subject = "Contact Form Submitted on ". get_bloginfo('siteurl');
+			$message = $amputated = $contact_message;
+			$time = date('m-d-Y h:i', time());
+			
+			$amputated = "Contact Form Submitted at " . $time . " from: " . $contact_full_name . " at " . $contact_email . ".\n\n" . $amputated.
+			$message  = "Contact Form Submitted at " . $time . "<br /><br /><br /><strong>From</strong><hr />\n\n" . $contact_full_name . "<br /><br /><br />\n\n<strong>Email</strong><hr />\n\n" . $contact_email . "<br /><br /><br />\n\n<strong>Message</strong><hr />\n\n" . $message . "<br /><br />Sincerely,<br /><br />The Hitfigure Email Bot<br />";
+			
+			$to = 'dev@magneticcreative.com';
+			
+            //get the data in!
+            $hitfigure = HitFigure::getInstance();
+            $hitfigure->send_email($subject, $message, $to, $from="HitFigure@Hitfigure.com", $amputated = null);
+			
+			/*
+			if($vehicle = $hitfigure->new_vehicle($args)) {				
+				// Redirect here... cuz we're all done!
+				$v_id = $vehicle->id;
+				header("Location: " . get_bloginfo('siteurl') . "/thank-you/" . $v_id);
+
+			}
+			*/
+			
+			//form submitted so...
+			$submitted = true;
+		}
+	}
+
+	// HitFigure is the main 'app' class, your code is its bitch
+	$hitfigure = HitFigure::getInstance();	
+	
+	(!$submitted) ? $prevars = array('form' => $f->get_data()) : $prevars = array('submitted' => 'submitted') ;
+	$vars = $hitfigure->template_vars($prevars);
+	
+
+	/*
+	print "<pre>\n";
+    print_r($vars);
+    print "</pre>";
+	*/
+	
+	display_mustache_template('contact', $vars);
+}
+
+/**
+* AJAX and Form-Propagation Functions
+*/
 
 function ajax_form_data($request) {
 

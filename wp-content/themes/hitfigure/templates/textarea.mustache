@@ -1,5 +1,5 @@
 <div {{#id}}id="wrapper-{{id}}"{{/id}} class="textarea-wrapper group{{^validated}} error{{/validated}}">
-	{{#text}}<label {{#id}}id="label-{{id}}"{{/id}} class="Label" for="{{name}}">{{text}}</label>{{/text}}
+	{{#text}}<label {{#id}}id="label-{{id}}"{{/id}} class="Label" for="{{name}}">{{text}}{{#required}} <span class="marker-required">*</span>{{/required}}</label>{{/text}}
 	<textarea 
 		{{#id}}id="{{id}}"{{/id}} 
 		class="{{class}}" 

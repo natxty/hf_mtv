@@ -1,18 +1,8 @@
 <h3 class="lead-title">Current Alerts</h3>
 <ul class="dash-alerts-list">
-	<li class="alert green">Won! 2008 Jaguar XJS <a class="alert-link" href="#">View Lead</a>
-		<a class="alert-close" href="#">Close</a>
+	{{#current_alerts}}
+	<li class="alert {{alert_type}}">{{alert_title}} <a class="alert-close" href="#">Close</a> <a class="alert-link" href="{{vehicle_url}}">VIEW</a>
+		
 	</li>
-	<li class="alert green">Won! 2010 Porcshe <a class="alert-link" href="#">View Lead</a>
-		<a class="alert-close" href="#">Close</a>
-	</li>
-	<li class="alert red">Outbid! 2009 Porsche Boxter. <a class="alert-link" href="#">View/Bid Again</a>
-		<a class="alert-close" href="#">Close</a>
-	</li>
-	<li class="alert blue">New! 1998 Subaru Forester. <a class="alert-link" href="#">View Vehicle</a>
-		<a class="alert-close" href="#">Close</a>
-	</li>
-	<li class="alert blue">New! 2004 Toyota Prius. <a class="alert-link" href="#">View Vehicle</a>
-		<a class="alert-close" href="#">Close</a>
-	</li>
+	{{/current_alerts}}
 </ul>

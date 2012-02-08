@@ -137,7 +137,7 @@ class DealerEmployee extends DealerAdmin {
 	}
 	
 	protected function get_client_data_vars($type, $args = array()) {
-		$this->no_priv();
+		$this->nopriv();
 	}
 
 }
@@ -154,11 +154,11 @@ class SalesPersonAdmin extends DealerEmployee {
 class AccountantAdmin extends DealerEmployee {
 
 	protected function get_view_lead_vars( $vehicle ) {
-		$this->no_priv();
+		$this->nopriv();
 	}
 	
 	protected function get_bid_vars($id) { 
-		$this->no_priv();
+		$this->nopriv();
 	}
 
 }

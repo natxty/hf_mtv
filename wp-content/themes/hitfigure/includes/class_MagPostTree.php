@@ -17,17 +17,19 @@ class MagPostTree implements iMagPostTree {
 	public static $PARENTS	= 0;
 
 	public function __construct() {
-		$this->post_type	= 'post';
-		$this->order 		= 'ASC';
-		$this->orderby 		= 'menu_order';
-		$this->args			= array();
+		$this->post_type		= 'post';
+		$this->order 			= 'ASC';
+		$this->orderby 			= 'menu_order';
+		$this->posts_per_page	= -1;
+		$this->args				= array();
 	}
 	
 	private function _build_query_args() {
 		$args = array(
-			'post_type'	=>$this->post_type,
-			'order'		=>$this->order,
-			'orderby'	=>$this->orderby		
+			'post_type'			=>$this->post_type,
+			'order'				=>$this->order,
+			'orderby'			=>$this->orderby,
+			'posts_per_page'	=>$this->posts_per_page		
 		);
 			
 		return array_merge($args, $this->args);
