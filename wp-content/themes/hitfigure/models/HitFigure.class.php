@@ -62,19 +62,19 @@ class HitFigure {
 				
 		if (in_array('administrator', $roles) || in_array('hitfigure', $roles)) {
 			$this->vars->add_protected('is_admin',True);
-			$this->admin = new Admin();
+			$this->admin = new Admin('administrator');
 		} elseif ( in_array('manufacturer', $roles) ) {
 			$this->vars->add('is_manufacturer',True);
-			$this->admin = new ManufacturerAdmin();
+			$this->admin = new ManufacturerAdmin('manufacturer');
 		} elseif ( in_array('dealer', $roles) ) {
 			$this->vars->add('is_dealer',True);
-			$this->admin = new DealerAdmin();
+			$this->admin = new DealerAdmin('dealer');
 		} elseif ( in_array('salesperson', $roles) ) {
 			$this->vars->add('is_salesperson',True);
-			$this->admin = new SalesPersonAdmin();
+			$this->admin = new SalesPersonAdmin('salesperson');
 		} elseif ( in_array('accountant', $roles) ) {
 			$this->vars->add('is_accountant',True);
-			$this->admin = new AccountantAdmin();
+			$this->admin = new AccountantAdmin('accountant');
 		}
 		
 	}
@@ -169,7 +169,8 @@ class HitFigure {
 			'siteurl'=>get_bloginfo('siteurl'),
 			'date_long' => date("M d, Y", $time),
 			'date_short' => date("m/d/Y", $time),
-			'date_year' => date("Y", $time)
+			'date_year' => date("Y", $time),
+			'currenturl'=> 'http://'.$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"]
 		);
 	}
 	
@@ -226,7 +227,7 @@ class HitFigure {
 		
 		$args['post_meta'] 					= $post_meta;
 		$args['post_meta']['winner_id'] 	= 0;
-		$args['post_title'] 				= $post_meta['vehicle_year'] . ' ' . $post_meta['vehicle_make'] . ' ' . $post_meta['vehicle_make'];
+		$args['post_title'] 				= $post_meta['vehicle_year'] . ' ' . $post_meta['vehicle_make'] . ' ' . $post_meta['vehicle_model'];
 		
 		$vehicle = new Vehicle($args);
 		$vehicle->save();
@@ -341,7 +342,10 @@ $message
 	
 	
 	
-	public function cron() {		
+	public function cron() {
+		
+			
+		/*
 		$args = array(
 			'meta_query' => array(
 					array(
@@ -352,19 +356,25 @@ $message
 					)
 				)		
 		);
+		*/
 		
-		//update_post_meta(713, 'winner_id', 0);
+		$args = array('post_status'=>'publish');
+		
 		//super simple way to ensure our cron hit is coming from our source...
-		if($_REQUEST['key'] == '525ef3e7827f41beb11e2e1ac84e0269') { 
+		if($_POST['key'] == '525ef3e7827f41beb11e2e1ac84e0269') { 
 		
 		  $vehicles = VehicleCollection::expired_leads($args);
 		  
 		  foreach ($vehicles as $vehicle) {
 			  
-			  $client = BidCollection::getHighestBidder($parent_id);
+			  // Using both wp_update_post and update_post_meta due to unreliable results
+			  // saving the Vehicle post object...
+			  wp_update_post( array('ID'=>$vehicle->id, 'post_status'=>'expired') );
 			  
+			  $client = BidCollection::getHighestBidder($parent_id);
+  
 			  if ($client) {
-				  update_post_meta($vehicle->id, 'winner_id', $client->id);
+			  	  update_post_meta($vehicle->id,'winner_id',$client->id);		  	  
 				  AlertCollection::new_alert('won', $client->id, $vehicle->id);
 				  $vehicle->seller_won_bid_email($client);
 			  } else {

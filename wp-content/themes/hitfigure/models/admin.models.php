@@ -24,7 +24,7 @@ class BasicAdmin extends Admin {
 				$this->nopriv(); 
 			}
 		}
-		return parent::edit_client_vars( $client );
+		parent::edit_client_vars( $client );
 	}
 	
 	protected function get_lead_data_vars() {

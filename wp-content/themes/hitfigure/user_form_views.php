@@ -125,7 +125,7 @@ function how_it_works() {
     $f->add($r);
 
     /* Accidents Please Explain */
-    $s = new \Input('vehicle_accidents_explain');
+    $s = new \Textarea('vehicle_accidents_explain');
     $s->setProperties(array(
 		'id' => 'id_vehicle_accidents_explain',
 		'name' =>'vehicle_accidents_explain',
@@ -151,8 +151,8 @@ function how_it_works() {
 		'required'=>True
 	));
 
-	$r->add_radio_button('rb_tires_sixty_percent_1', array('text'=>'Yes', 'value'=> 'Yes'));
-	$r->add_radio_button('rb_tires_sixty_percent_2', array('text'=>'No', 'value'=> 'No'));
+	$r->add_radio_button('rb_tires_sixty_percent_1', array('text'=>'Better', 'value'=> 'Better'));
+	$r->add_radio_button('rb_tires_sixty_percent_2', array('text'=>'Worse', 'value'=> 'Worse'));
     $f->add($r);
 
 
@@ -178,7 +178,7 @@ function how_it_works() {
     $f->add($r);
 
     /* Paintwork? Please Explain */
-    $s = new \Input('vehicle_paintwork_performed_explain');
+    $s = new \Textarea('vehicle_paintwork_performed_explain');
     $s->setProperties(array(
 		'id' => 'id_vehicle_paintwork_performed_explain',
 		'name' =>'vehicle_paintwork_performed_explain',
@@ -230,7 +230,7 @@ function how_it_works() {
     $f->add($r);
 
     /* Paintwork Needed? Please Explain */
-    $s = new \Input('vehicle_paintwork_needed_explain');
+    $s = new \Textarea('vehicle_paintwork_needed_explain');
     $s->setProperties(array(
 		'id' =>'id_vehicle_paintwork_needed_explain',
 		'name' =>'vehicle_paintwork_needed_explain',
@@ -423,7 +423,11 @@ function how_it_works() {
 	
 	*/
 	/* State */
-    $s = state_select_form($id="state", $args = array());
+    $s = state_select_form($id="state", $args = array(
+		'id' =>'id_vehicle_state',
+		'name' =>'vehicle_state',
+		'text' =>'State',
+		'required'=>True));
     $f->add($s);
 
     /* Zip Code */
@@ -508,8 +512,8 @@ function how_it_works() {
             $hitfigure = HitFigure::getInstance();
             if($vehicle = $hitfigure->new_vehicle($args)) {				
 				// Redirect here... cuz we're all done!
-				$v_id = $vehicle->id;
-				header("Location: " . get_bloginfo('siteurl') . "/thank-you/" . $v_id);
+				$vslug = $vehicle_year . " " . $vehicle_make . " " . $vehicle_model;
+				header("Location: " . get_bloginfo('siteurl') . "/thank-you/?v=" . $vslug);
 
 			}
 
@@ -535,11 +539,10 @@ function how_it_works() {
 
 function thank_you( $request ) {
 	
-	$id 	= $request['id']; // Lead (vehicle) ID
+	$v 	= $_GET['v']; // Lead (vehicle) ID
 
 	$hitfigure 		= HitFigure::getInstance();
-	$frontendvars 	= $hitfigure->front_end->thank_you($id);
-	
+	$frontendvars 	= array('vslug' => $v);
 	$vars = $hitfigure->template_vars($frontendvars);	
 	display_mustache_template('thankyou', $vars);
 	
@@ -685,7 +688,7 @@ function ajax_form_data($request) {
 
     $post_data 	= json_decode(str_replace("\\", "", $_POST['data']));
     $action 	= $post_data->action;
-    $xdata 		= $post_data->data;
+    $xdata 		= (array)$post_data->data;
     switch($action) {
         case 'vehicle_makes':
             $data = get_car_makes($xdata, 'ASC', true);
@@ -707,10 +710,11 @@ function ajax_form_data($request) {
 
 }
 
-function get_car_makes($car_year = null, $order = 'DESC', $json=false) {
+function get_car_makes($car_data, $order = 'DESC', $json=false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
     
+	if($car_data) { extract($car_data); }
     
     /* Vehicle Make */
 	$s = new \Select('vehicle_make');
@@ -724,11 +728,11 @@ function get_car_makes($car_year = null, $order = 'DESC', $json=false) {
     $s->add_option('opt',array('text'=> '-- Select a Make --'));
     
     //get all makes
-    $query = "SELECT DISTINCT car_make FROM $tbl ";
+    $query = "SELECT DISTINCT car_make FROM $tbl";
     if($car_year) {
-       $query .= "WHERE car_year = " . $car_year . " ";
+       $query .= " WHERE car_year = " . $car_year;
     }
-    $query .= "ORDER BY car_make $order";
+    $query .= " ORDER BY car_make $order";
 
 	$makes = $wpdb->get_results($query);
 
@@ -746,10 +750,11 @@ function get_car_makes($car_year = null, $order = 'DESC', $json=false) {
 	}
 }
 
-function get_car_models($car_make = null, $order = 'DESC', $json=false) {
+function get_car_models($car_data, $order = 'DESC', $json=false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
 
+	if($car_data) { extract($car_data); }
 
 	/* Vehicle Model */
 	$s = new \Select('vehicle_model');
@@ -761,13 +766,20 @@ function get_car_models($car_make = null, $order = 'DESC', $json=false) {
 	));
 
     //get all makes
-    $query = "SELECT DISTINCT car_model FROM $tbl ";
-    if($car_make) {
-       $query .= "WHERE car_make = '" . $car_make . "' ";
-    }
-    $query .= "ORDER BY car_model $order";
+    $query = "SELECT DISTINCT car_model FROM $tbl";
+	if($car_data) { 
+		$query .= ' WHERE ';
+		foreach($car_data as $col => $value) {
+			$query .= $col ." = '" . $value . "' AND ";
+		}
+		$query = substr($query, 0, -5);
+		
+	}
+    $query .= " ORDER BY car_model $order";
 	
+	//and, go!
 	$models = $wpdb->get_results($query);
+	
 
 	$s->add_option('opt',array('text'=>'-- Select a Model --'));
     
@@ -785,9 +797,11 @@ function get_car_models($car_make = null, $order = 'DESC', $json=false) {
 	}
 }
 
-function get_car_trim($car_model = null, $order = 'DESC', $json = false) {
+function get_car_trim($car_data, $order = 'DESC', $json = false) {
     global $wpdb;
     $tbl = $wpdb->prefix . "wtmod_cardb";
+ 
+ 	if($car_data) { extract($car_data); }
  
  	/* Vehicle Trim */
 	$s = new \Select('vehicle_trim');
@@ -799,19 +813,26 @@ function get_car_trim($car_model = null, $order = 'DESC', $json = false) {
 	));
 
 	$s->add_option('opt',array('text'=>'-- Select A Trim --'));
- 
- 	if ($car_model) {
- 	    $query = "SELECT DISTINCT car_trim FROM $tbl ";
-	    $query .= "WHERE car_model = '" . $car_model . "' ";
-	    $query .= "ORDER BY car_trim $order";
 	
-		$trims = $wpdb->get_results($query);
-		
-	    foreach($trims as $trim) {
-	    	if ($trim->car_trim)
-				$s->add_option('opt',array('text'=>$trim->car_trim,'value'=> $trim->car_trim));
+	$query = "SELECT DISTINCT car_trim FROM $tbl";
+	
+	if($car_data) { 
+		$query .= ' WHERE ';
+		foreach($car_data as $col => $value) {
+			$query .= $col ." = '" . $value . "' AND ";
 		}
+		$query = substr($query, 0, -5);
+		
 	}
+
+	$trims = $wpdb->get_results($query);
+	
+		
+	foreach($trims as $trim) {
+		if ($trim->car_trim)
+			$s->add_option('opt',array('text'=>$trim->car_trim,'value'=> $trim->car_trim));
+	}
+		
 
 	if (!$json) {
 		return $s;

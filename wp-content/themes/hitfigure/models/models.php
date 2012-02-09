@@ -9,10 +9,10 @@ class VehicleCollection extends PostCollection {
 	public static $model = "hitfigure\models\Vehicle";
 	
 	public static $default_filter = array(
-		'post_type' => 'cpt-vehicle',
-        'posts_per_page' => 10,
-        'order' => 'DESC',
-        'paged' => '1'
+		'post_type' 		=> 'cpt-vehicle',
+        'posts_per_page' 	=> -1,
+        'order' 			=> 'DESC',
+        'paged' 			=> '1'
     );
     
     public static function get_by_id( $id ) {
@@ -58,13 +58,18 @@ class VehicleCollection extends PostCollection {
 		}	
 	}	
 	
-	public static function get_json_vehicle_data($args = array(), $active = true) {		
+	public static function get_json_vehicle_data($args = array(), $active = true, $expired = false) {		
 		$vehicles_json = array();
 		if ($active) {
 			$vehicles = self::active_leads($args);
 		} else {
-			$vehicles = self::filter($args);
+			if ($expired) {
+				$vehicles = self::expired_leads($args);
+			} else {	
+				$vehicles = self::filter($args);
+			}
 		}
+		
 		foreach ($vehicles as $vehicle) {
 			$vehicles_json[] = $vehicle->to_json();
 		}
@@ -78,7 +83,7 @@ class VehicleCollection extends PostCollection {
 		remove_filter( 'posts_where', 'hitfigure\models\filter_where_48hours_past' );
 		return $vehicles;		
 	}
-		
+	
 }
 
 
@@ -151,6 +156,11 @@ class Vehicle extends Post {
 	}
 	
     public function save() {
+    	// If we don't unset this it gives all of these the same value
+    	// and that results in the first image being repeated over and over
+    	if ( isset($this->attributes['meta_data']['_attachments']) ) {
+    		unset($this->attributes['meta_data']['_attachments']);
+    	}
        	parent::save();       	
     }	
 	
@@ -170,6 +180,17 @@ class Vehicle extends Post {
 		$interval = $todaysDate->diff($postDateEnd);
 		
 		return $interval->format($format);	
+	}
+	
+	public function expired_with_winner() {
+		if (!$this->time_left) {
+			if ($winner_id = $this->winner_id) {
+				return $winner_id;
+			} else {
+				$client = BidCollection::getHighestBidder($this->id);
+				return $client->id;
+			}
+		}
 	}
 	
 	public function to_json() {
@@ -235,7 +256,7 @@ class Vehicle extends Post {
 		$hitfigure = HitFigure::getInstance();
 		
 		$vars = array('time_left'=>$this->time_left(), 'vehicle_name'=>$this->post_title) + $this->post_meta + $bid->post_meta;
-		$vars['amount'] = money_format('$%i', $vars['amount']);
+		$vars['amount'] = BidCollection::mf($vars['amount']);
 		
 		$message = display_mustache_template('sellernewbid', $vars, False);
 
@@ -251,10 +272,13 @@ class Vehicle extends Post {
 	}
 	
 	public function seller_won_bid_email($client) {
-		
+				
 		$bid = BidCollection::getTopBid($this->id);
-		
-		$vars = array('vehicle_name'=>$this->post_title) + $client->get_vars() + $this->get_vars() + $bid->get_vars();
+				
+		$vars = array('vehicle_name'=>$this->post_title);
+		$vars = $vars + $client->get_vars();
+		$vars = $vars + $this->get_vars();
+		$vars = $vars + $bid->get_vars();
 		
 		$message = display_mustache_template('sellerbidclosed', $vars, False);
 
@@ -342,9 +366,10 @@ class AlertCollection extends PostCollection {
 	
 	public static $default_filter = array(
 		'post_type' => 'cpt-alert',
-        'posts_per_page' => 10,
+        'posts_per_page' => -1,
         'order' => 'DESC',
-        'paged' => '1'
+        'paged' => '1',
+        'post_status'=>'publish'
     );
     
     public static function filter( $args = array() ) {
@@ -397,27 +422,48 @@ class AlertCollection extends PostCollection {
     		return;
     	}
     	
-    	$args = array(
-    		'user_id' 		=> $user_id
-    	);
+    	$client = new Client(array('id'=>$user_id));
+    	$client->fetch();
     	
-    	if ($vehicle_id) {
-    		$args['vehicle_id'] = $vehicle_id;
+    	$client_ids = array();
+    	
+    	if (in_array('dealer',$client->roles)) {
+    		// We'll need to contact all the employees about this too...
+    		$employees = ClientCollection::filter(array('meta_key'=>'user_parent','meta_value'=>$client->id));
+    		foreach($employees as $employee) {
+    			$client_ids[] = $employee->id;
+    		}
     	}
     	
-    	$class = new $class_name($args);   	
-    	$class->save();
+    	/*
+    	 * Should the opposite also be true? That employee emails go up to Dealers?
+    	 */
     	
-    	$class->send_email();
+    	// Finally, add the original user_id
+    	$client_ids[] = $user_id;
+    	
+    	foreach( $client_ids as $client_id ) {
+	    	$args = array(
+	    		'user_id' => $client_id
+	    	);
+	    	
+	    	if ($vehicle_id) {
+	    		$args['vehicle_id'] = $vehicle_id;
+	    	}
+	    	
+	    	$class = new $class_name($args);   	
+	    	$class->save();
+	    	
+	    	$class->send_email();
+		}
     	
     	return $class;
-    
     }
     
     public static function get_by_id( $id ) {
 		$alerts = self::filter(array('p'=>$id, 'posts_per_page'=>1));
 		if (!count($alerts)) {
-			return Null;
+			return;
 		}
 		return $alerts->current();     
     }
@@ -426,7 +472,6 @@ class AlertCollection extends PostCollection {
     	// Simple way to find an alert by id and dismiss it
     	$alert = self::get_by_id($id);
     	if ($alert) {
-    		$alert->fetch();
     		$alert->dismiss();
     	}
     }
@@ -547,8 +592,7 @@ class Alert extends Post {
 	
 	public function dismiss() {
 		// Set the alert_dismissed to true and save it
-		
-		$this->post_meta['alert_dismissed'] = True;
+		$this->post_status = 'dismissed';
 		$this->save();
 	}
 	
@@ -573,12 +617,13 @@ class Alert extends Post {
 class AlertVehicle extends Alert {
 
 	public function save() {
-		$vehicle_id 	= $this->attributes['vehicle_id'];
-		$vehicle		= new Vehicle(array('id'=>$vehicle_id));
-		$vehicle->fetch();
-		$vehicle_name 	= $vehicle->post_meta['vehicle_year'] . ' ' . $vehicle->post_meta['vehicle_make'] . ' ' . $vehicle->post_meta['vehicle_model'];
-		$this->attributes['post_title'] .= ' '.$vehicle_name;
-
+		if ( isset($this->attributes['vehicle_id']) ) {
+			$vehicle_id 	= $this->attributes['vehicle_id'];
+			$vehicle		= new Vehicle(array('id'=>$vehicle_id));
+			$vehicle->fetch();
+			$vehicle_name 	= $vehicle->post_meta['vehicle_year'] . ' ' . $vehicle->post_meta['vehicle_make'] . ' ' . $vehicle->post_meta['vehicle_model'];
+			$this->attributes['post_title'] .= ' '.$vehicle_name;
+		}	
 		parent::save();
 	}
 
@@ -688,30 +733,28 @@ class BidCollection extends PostCollection {
 	
 	public static $default_filter = array(
 		'post_type' => 'cpt-bid',
-        'posts_per_page' => 10,
+        'posts_per_page' => -1,
         'order' => 'DESC',
         'paged' => '1'
     );
     
     public static function getHighestBid($parent_id) {
-    	$bids = self::getTopBid($parent_id);
-    	if (!count($bids)) {
+    	$bid = self::getTopBid($parent_id);
+    	if (!$bid) {
     		// No Bids Yet...
     		return 0;
     	}
-    	$bid = $bids->current();
     	    	    	
     	$amount = self::convertAmount($bid->post_meta['amount']);
     	return $amount;
     }
     
     public static function getHighestBidder($parent_id) {
-    	$bids = self::getTopBid($parent_id);
-     	if (!count($bids)) {
+    	$bid = self::getTopBid($parent_id);
+     	if (!$bid) {
     		// No Bids Yet...
     		return;
     	}
-    	$bid = $bids->current();
     	
     	$bidder_id = $bid->post_meta['user_id'];
     	$client = new Client(array('id'=>$bidder_id));
@@ -720,7 +763,15 @@ class BidCollection extends PostCollection {
     }
     
     public static function getTopBid($parent_id) {
-    	return self::filter(array('post_parent'=>$parent_id, 'posts_per_page'=>1));
+    	$bids = self::filter( array('post_parent'=>$parent_id, 'posts_per_page'=>1, 'post_status'=>'any') );
+		
+    	if (!count($bids)) {
+    		return;
+    	}
+    	
+    	$bid = $bids->current();
+    	    	
+    	return $bid;
     }
     
     public static function getMinAmount($parent_id) {
@@ -762,7 +813,14 @@ class BidCollection extends PostCollection {
     }
     
     public static function convertAmount($amount) {
-		return 0+$amount;   
+    	$amount = 0+str_replace(",", "",(string)$amount);
+		return $amount;
+    }
+    
+    public static function mf($amount) {
+    	// Convert to money format
+    	$amount = self::convertAmount($amount);
+    	return money_format('$%!i', $amount);
     }
 
 	public static function yourHighestBid($parent_id) {
@@ -780,17 +838,15 @@ class BidCollection extends PostCollection {
 	}
     
     public static function bidStatus($parent_id) { 
-   		$bids = self::getTopBid($parent_id);
-   		if (!count($bids)) {
+   		$bid = self::getTopBid($parent_id);
+   		if (!$bid) {
    			return -1;
    		}
 
 		$hitfigure = HitFigure::getInstance();
      	$user = $hitfigure->admin->user;
     	$user_id = $user->id;    		
-   		
-   		$bid = $bids->current();
-   		   		
+   		   		   		
    		if ( (int)$bid->post_meta['user_id'] == (int)$user_id ) {
    			return 1;
    		} else {
@@ -806,7 +862,7 @@ class Bid extends Post {
 	
 	public function get_vars() {
 		return array(
-			'bid_amount'=>money_format('$%i', $this->post_meta['amount'])
+			'bid_amount'=>BidCollection::mf($this->post_meta['amount'])
 		);
 	}
 	

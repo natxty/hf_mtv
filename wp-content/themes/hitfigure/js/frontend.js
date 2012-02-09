@@ -1,28 +1,28 @@
 $(document).ready(function() {
-    var debug = true;
+    var debug = false;
 
-    //When page loads...
-	$(".seller_form_container").hide(); //Hide all content
-    $(".subinfo").hide(); //Hide all subsections that will open with proper radio buttons
+    /* When page loads... */
+	jQuery(".seller_form_container").hide(); /* Hide all content */
+    jQuery(".subinfo").hide(); /* Hide all subsections that will open with proper radio buttons */
 
-	$(".seller_form_container:first").show(); //Show first "page" content
+	jQuery(".seller_form_container:first").show(); /* Show first "page" content */
 
-	//Page Progression + Validation click functions
-	$(".seller_form_container a.button").click(function() {
+	/* Page Progression + Validation click functions */
+	jQuery(".seller_form_container a.button").click(function() {
 
-        var id = $(this).closest("div").attr("id"); //gather for validation purposes..
+        var id = $(this).closest("div").attr("id"); /* gather for validation purposes.. */
         var next_page = $(this).attr("href");
         if(debug) console.log("#" + id);
 
         var errors = false;
 
-        //validate select inputs
+        /* validate select inputs */
          $("#" + id + " select").each(function() {
-            //look through our class declaration from our micro-templates and find
-            //if the class="validate" is present (even in combination with other classes)
+            /* look through our class declaration from our micro-templates and find */
+            /* if the class="validate" is present (even in combination with other classes) */
             var isValidate = $(this).parent().children('.required').length;
             var selectID = $(this).attr('id');
-            if(isValidate) { //only check the ones with class="validate"
+            if(isValidate) { /* only check the ones with class="validate" */
                 var optionValue = $("#" + selectID + ' option:selected').val();
                 if(optionValue.length < 1) {
                     $(this).parent().addClass('error');
@@ -33,20 +33,21 @@ $(document).ready(function() {
                     }
                 } else {
                     $(this).parent().removeClass('error');
+					$(this).removeClass('error');
                 }
 
             }
 
          });
-        //$("select option:selected")
+        /* $("select option:selected") */
 
-        //validate text inputs:
-        $("#" + id + " input[type=text]").each(function(n, element) {
-            //look through our class declaration from our micro-templates and find
-            //if the class="validate" is present (even in combination with other classes)
+        /* validate text inputs: */
+        jQuery("#" + id + " input[type=text]").each(function(n, element) {
+            /* look through our class declaration from our micro-templates and find */
+            /* if the class="validate" is present (even in combination with other classes) */
             var isValidate = $(this).parent().children('.required').length;
 
-            if(isValidate) { //only check the ones with class="validate"
+            if(isValidate) { /* only check the ones with class="validate" */
                 var txtval = $(this).val();
                 if(txtval.length < 1) {
                     $(this).parent().addClass('error');
@@ -64,14 +65,14 @@ $(document).ready(function() {
             }
         });
 
-        $("#" + id + " .RadioGroup").each(function() {
+        jQuery("#" + id + " .RadioGroup").each(function() {
 
-            //get the trimmed id...
+            /* get the trimmed id... */
             var radioID = $(this).attr('id');
             var radioName = radioID.replace(/wrapper\-id_/i, '');
             if(debug) console.log(radioName);
 
-            //do we have a required child div?
+            /* do we have a required child div? */
             if($(this).children('.required').length) {
 
                 if ($('input[name='+ radioName +']:checked').length) {
@@ -85,20 +86,20 @@ $(document).ready(function() {
         });
 
         if(errors) {
-            //alert('errors');
-            //error classes added individually above...
-            //TO-DO: print error description somewhere...
+            /* alert('errors'); */
+            /* error classes added individually above... */
+            /* TO-DO: print error description somewhere... */
             
         } else {
-            //we're clear for lift-off
+            /* we're clear for lift-off */
            $('.seller_form_container').hide();
             $(next_page).fadeIn();
         }
-        //make sure we stop the normal anchor/link function:
+        /* make sure we stop the normal anchor/link function: */
 		return false;
 	});
 
-    //wtf?
+    /* wtf? */
     MTV.debugging();
 
     /* Main Select Elements + AJAX calls to get filtered options from the DB */
@@ -110,7 +111,9 @@ $(document).ready(function() {
             text : 'make',
             xdata : {
                 action : "vehicle_makes",
-                data : cyear
+                data : {
+					'car_year' : cyear
+				}
             },
             result_id : '#id_vehicle_make'
 
@@ -120,13 +123,18 @@ $(document).ready(function() {
 
     /* Makes => Models */
     jQuery('#id_vehicle_make').live('change', function() {
-        //take make and return models
+        /* take year + make and return models */
+		cyear = jQuery('#id_vehicle_year').val();
 		cmake = jQuery('#id_vehicle_make').val();
+		
         var a = {
             text : 'model',
             xdata : {
                 action : "vehicle_models",
-                data : cmake
+                data : {
+					'car_year'	:	cyear,
+					'car_make' :	cmake
+				}
             },
             result_id : '#id_vehicle_model'
 
@@ -136,13 +144,19 @@ $(document).ready(function() {
 
     /* Models => Trim (if any) */
     jQuery('#id_vehicle_model').live('change', function() {
-
+		cyear = jQuery('#id_vehicle_year').val();
+		cmake = jQuery('#id_vehicle_make').val();
 		cmodel = jQuery('#id_vehicle_model').val();
+		
         var a = {
             text : 'trim',
             xdata : {
                 action : "vehicle_trims",
-                data : cmodel
+                data : {
+					'car_year'	:	cyear,
+					'car_model' :	cmake,
+					'car_model'	:	cmodel
+				}
             },
             result_id : '#id_vehicle_trim'
 
@@ -160,19 +174,20 @@ $(document).ready(function() {
     * 
      */
 	function get_car_data(obj) {
-		// Set current to disabled, it'll get overwritten when we add the ajax result
+		/*  Set current to disabled, it'll get overwritten when we add the ajax result */
 		jQuery(obj.result_id).attr('disabled','disabled');
 	
         var resultType = 'car_' + obj.text;
         var topOptionText = ucwords(obj.text);
 
 		MTV.do_ajax(
-			// global javascript variable
+			/*  global javascript variable */
 			'/ajax_form_data/',
 			obj.xdata,
 			function( response ) {
-                //if(debug) alert(response.length);
+                /* if(debug) alert(response.length); */
 				jQuery(obj.result_id).parent().replaceWith(response.html);
+				if(debug) console.log(obj.debug);
 			},
             function(error) {
                 alert('error')
@@ -181,15 +196,15 @@ $(document).ready(function() {
 	}
 
     /*
-    * Radio Button // Open Sub Info
+    * Radio Button/Open Sub Info
      */
-    $(".radio_group_wrapper").each(function() {
+    jQuery(".radio_group_wrapper").each(function() {
 
         var subdiv = $(this).children('.subinfo');
         
-        //does this group/wrapper have a '.subinfo' div? if so...
+        /* does this group/wrapper have a '.subinfo' div? if so... */
         if(subdiv.length) {
-            //get the trimmed id...
+            /* get the trimmed id... */
             var radioID = $(this).attr('id');
             var radioName = radioID.replace(/id_/i, '');
             radioName = radioName.replace(/_wrapper/i, '');
@@ -197,10 +212,10 @@ $(document).ready(function() {
 
             $('input[name=' + radioName + ']').change(function() {
                   if($(this).val() == 'Yes') {
-                    //open subdiv
+                    /* open subdiv */
                     $(subdiv).show();
                   } else {
-                      //close the subdiv
+                      /* close the subdiv */
                       $(subdiv).hide();
                   }
             });
@@ -215,5 +230,6 @@ $(document).ready(function() {
         })
     };
 	
-	
+
+/* end frontend.js */
 } );

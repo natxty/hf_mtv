@@ -36,8 +36,8 @@
     <p>The globals <code>$GLOBALS</code>, <code>$wp_object_cache</code> and <code>$twig</code> removed for sanity</p>
 
     {{#globals}}
-    <h4>global ${{ name }}</h4>
+    <h4>global ${{name}}</h4>
     <pre>{{var}}</pre>
-    {{\globals}}
+    {{/globals}}
 </body>
 </html>

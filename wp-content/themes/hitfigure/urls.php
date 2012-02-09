@@ -13,7 +13,7 @@ $url_patterns = array(
 	'/admin\/bid\/(?P<id>[\d]+)/'							=> 'hitfigure\views\bid',
 	'/admin\/email\/(?P<id>[\d]+)/'							=> 'hitfigure\views\email_seller',
 	'/how-it-works/'										=> 'hitfigure\views\how_it_works',
-	'/thank-you\/(?P<id>[\d]+)/'							=> 'hitfigure\views\thank_you',
+	'/thank-you/'											=> 'hitfigure\views\thank_you',
 	'/faqs/'												=> 'hitfigure\views\faqs',
 	'/contact/'												=> 'hitfigure\views\contact',
 	'/homepage/'											=> 'hitfigure\views\homepage',
@@ -23,10 +23,11 @@ $url_patterns = array(
 	'/ajax_view_alerts/'									=> 'hitfigure\views\ajax_alert_data',
 	'/zamboni/'												=> 'hitfigure\views\zamboni',
 	'/tests/'												=> 'hitfigure\views\tests',
+	'/admin\/dismiss/'										=> 'hitfigure\views\dismiss_alert',
 	'/(?P<slug>[\w-\/]+)\/?$/' 								=> 'hitfigure\views\page'
 );
 
 $ajax_url_patterns = array(
-	'/ajax_app_setup/'	=> 'hitfigure\views\ajax_app_setup',
-	'/ajax_form_data/'  => 'hitfigure\views\ajax_form_data'
+	'/ajax_form_data/'  			=> 'hitfigure\views\ajax_form_data',
+	'/admin\/dismiss/'				=> 'hitfigure\views\dismiss_alert'
 );

@@ -63,7 +63,7 @@ class TemplateVariablesContainer {
 		if (count($args) > 1 && is_string($args[0])) { // Key + Value
 			$a[$args[0]] = $args[1];
 		
-		} elseif (count($args) == 1 && is_array($args[0])) {
+		} elseif (count($args) == 1 && is_array($args[0])) { // Array
 			$a = $args[0];
 		
 		}

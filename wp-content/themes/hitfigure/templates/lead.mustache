@@ -54,7 +54,9 @@
 			</div>
 		{{/timeleft}}
 		{{^timeleft}} {{!Display this block if the lead has expired}}
-			<h3 class="lead-title pl20">This lead has expired.</h3>
+		<div class="lead-offer-box pl20">
+			<h3 class="button frontFormBtn">This lead has expired.</h3>
+		</div>
 		{{/timeleft}}
 	<!-- end left col -->
 	</div>
@@ -71,10 +73,12 @@
 			{{#attachments}} <a href="">{{&vehicle_img_thumb}}</a> {{/attachments}}
 		  
 		</div>
-		<h3 class="lead-title">Seller Info</h3>
-		<p><strong>{{seller_firstname}} {{seller_lastname}}</strong><br />
-		<a href="mailto:{{seller_email}}">{{seller_email}}</a><br />
-		{{seller_city}}, {{seller_state}} {{seller_zipcode}}</p>
+		{{#lead_view_seller_info}}
+			<h3 class="lead-title">Seller Info</h3>
+			<p><strong>{{seller_firstname}} {{seller_lastname}}</strong><br />
+			<a href="mailto:{{seller_email}}">{{seller_email}}</a><br />
+			{{seller_city}}, {{seller_state}} {{seller_zipcode}}</p>
+		{{/lead_view_seller_info}}
 		
 	<!-- end right col -->
 	</div>

@@ -7,6 +7,9 @@ if ( function_exists('mtv\register_app') ) {
     mtv\register_app('mtv-hitfigure', __DIR__);
 }
 
+// Set Local (for $$$)
+setlocale(LC_MONETARY, 'en_US');
+
 // User Roles
 add_role( 'hitfigure', 'HitFigure', array( 'manage_manufacturers', 'manage_dealers', 'bid' ) );
 add_role( 'manufacturer', 'Manufacturer', array( 'manage_dealers', 'bid' ) );
@@ -17,23 +20,31 @@ add_role( 'accountant', 'Accountant', array( ) );
 // Custom Status 
 // -- this seems impossible, get_post_statuses() seems to only choose a limited number, but I don't know where it is called...
 // This is because wp-admin/includes/meta-boxes.php around line 87 you see that the post statuses are hard-coded...lame...
-/*
-add_action('wp_loaded', function() {
-	global $wp_post_statuses;
-	register_post_status('Expired', array(
-		'label' => 'Expired', 
-		'internal'=>false, 
-		'public'=>true,
-		'_builtin'=> true,
-		'label_count'=>_n_noop( 'Expired <span class="count">(%s)</span>', 'Expired <span class="count">(%s)</span>' ),
-		'publicly_queryable' => 1,
+
+add_action('init', function() {
+	register_post_status('expired', array(
+		'label' 					=> 'Expired', 
+		'public'					=> true,
         'show_in_admin_status_list' => 1,
-        'show_in_admin_all_list' => 1
+        'show_in_admin_all_list' 	=> 1,
+        'exclude_from_search' 		=> false,
+		'label_count' 				=> _n_noop( 'Expired <span class="count">(%s)</span>', 'Expired <span class="count">(%s)</span>' )
 		)
 	);
-	print_r($wp_post_statuses);
+
+	register_post_status('dismissed', array(
+		'label' 					=> 'Dismissed', 
+		'public'					=> true,
+        'show_in_admin_status_list' => 1,
+        'show_in_admin_all_list' 	=> 1,
+        'exclude_from_search' 		=> false,
+		'label_count' 				=> _n_noop( 'Dismissed <span class="count">(%s)</span>', 'Dismissed <span class="count">(%s)</span>' )
+		)
+	);
+
+
 });
-*/
+
 
 // Custom Image Sizes
 add_image_size( 'vehicle_img_full', 324, 250, true );

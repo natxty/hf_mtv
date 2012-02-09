@@ -305,6 +305,10 @@ class Post extends Model {
 
         return $ret;
     }
+    
+	public function get_post_date($format="m/d/Y h:i") { // Added by CK
+		return date($format, strtotime($this->post_date));
+	}    
 }
 
 class PostCollection extends Collection {

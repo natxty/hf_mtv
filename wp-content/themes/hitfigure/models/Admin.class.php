@@ -11,7 +11,10 @@ namespace hitfigure\models;
  
  
 class Admin {
-	public function __construct() {
+	public $role = '';
+
+	public function __construct($role) {
+		$this->role = $role;
 		$this->user = ClientCollection::get_current();
 	}
 	
@@ -118,7 +121,7 @@ class Admin {
 		
 		
 		");
-		*/		
+		*/
 		
 		$args = array(
 			'current_alerts' 			=> $current_alerts,
@@ -138,13 +141,15 @@ class Admin {
 
 
 	public function register_client( $type ) {
-		return $this->register_client_vars($type);
+		$this->register_client_vars($type);
 	}
 
 
 
 	protected function register_client_vars( $type ) {
-		return array('form'=>$this->update_client($type));
+		$form = $this->update_client($type);
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->vars->add('form', $form);		
 	}
 
 
@@ -154,8 +159,8 @@ class Admin {
 		
 		$client = new Client(array('id'=>$id));
 		$client->fetch();
-		
-		return $this->edit_client_vars($client);
+				
+		$this->edit_client_vars($client);
 	}
 
 
@@ -170,7 +175,14 @@ class Admin {
 			$adminvars['clienttype'] = $_GET['clientregistered']; // -- This is the Type of client
 		}		
 		
-		return 	$adminvars;
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->vars->add($adminvars);
+		
+		$title 		= "Edit ".ucfirst($type)." | ".$client->business_name;
+		$pgheader 	= "Editing " .$client->business_name;
+
+		$hitfigure->vars->merge("title", $title);
+		$hitfigure->vars->merge("pgheader", $pgheader);
 	}
 	
 	
@@ -336,7 +348,7 @@ class Admin {
 		$i = new \Input('business_name');
 		$i->setProperties(array(
 			'name' =>'business_name',
-			'text' =>'Dealer Name',
+			'text' =>'Business Name',
 			'required'=>True
 		));
 		$f->add($i);		
@@ -573,26 +585,32 @@ class Admin {
 	
 	
 	
-	public function view_lead( $id ) {
+	public function view_lead( $id ) {		
 		$vehicle = new Vehicle(array('id'=>$id));	
 		$vehicle->fetch();
 	
-		return $this->get_view_lead_vars($vehicle);
+		$this->get_view_lead_vars($vehicle);
 	}
 	
 	
 	
-	protected function get_view_lead_vars( $vehicle ) {		
+	protected function get_view_lead_vars( $vehicle ) {
+		$hitfigure = HitFigure::getInstance();
+	
 		$min_amount 			= BidCollection::getMinAmount($vehicle->id);
 		$highest_amount 		= BidCollection::getHighestBid($vehicle->id);
 		$your_highest_amount 	= BidCollection::yourHighestBid($vehicle->id);
 		$bid_status 			= $this->bid_status_text(BidCollection::bidStatus($vehicle->id));
+				
+		if ( ($this->role == 'administrator') || ($vehicle->expired_with_winner() == $this->user->id) ) {
+			$hitfigure->vars->add('lead_view_seller_info',True);
+		}
 		
 		$bidvars = array(
 			'timeleft'				=>VehicleCollection::time_left($vehicle->id),
-			'min_amount'			=>money_format('$%i', $min_amount),
-			'highest_amount'		=>money_format('$%i', $highest_amount),
-			'your_highest_amount'	=>money_format('$%i', $your_highest_amount),
+			'min_amount'			=>BidCollection::mf($min_amount),
+			'highest_amount'		=>BidCollection::mf($highest_amount),
+			'your_highest_amount'	=>BidCollection::mf($your_highest_amount),
 			'bid_status'			=>$bid_status
 		);
 		
@@ -601,11 +619,12 @@ class Admin {
 		$vehicle_name 		= $vehicle->post_title;
 		$vehicle_post_date	= $vehicle->get_post_date();
 			
-		$pagevars = array(
-			'pgheader'=>"$vehicle_name <small>$vehicle_post_date</small>"
-		);	
-			
-		return $vehicle->get_vars() + $bidvars + $attachments + $pagevars;	
+		
+		$hitfigure->vars->add($vehicle->get_vars());
+		$hitfigure->vars->add($bidvars);
+		$hitfigure->vars->add($attachments);
+		$hitfigure->vars->add("pgheader","$vehicle_name <small>$vehicle_post_date</small>");
+		$hitfigure->vars->merge("title","Lead | $vehicle_name");
 	}
 	
 	
@@ -628,17 +647,34 @@ class Admin {
 		
 		$alert = $alerts->current();
 
-		return $this->get_view_alert_vars($alert);
+		$this->get_view_alert_vars($alert);
 	}
 	
-
-
+	
+	
 	protected function get_view_alert_vars( $alert ) {
-		$vars = array(
-			'alert_message'=>$alert->post_content
-		);
+		$hitfigure = HitFigure::getInstance();
 		
-		return $vars;	
+		$alert_post_date = $alert->get_post_date();
+		
+		$vars = array(
+			'alert_message'	=>$alert->post_content,
+			'pgheader'		=>$alert->post_title ." <small>$alert_post_date</small>"
+		);		
+		
+		$hitfigure->vars->merge('title', 'View Alert | ' . $alert->post_title);
+		$hitfigure->vars->add($alert->get_vars());
+		$hitfigure->vars->add($vars);	
+	}
+	
+	
+	
+	public function dismiss_alert($alert_id, $redirect) {
+		AlertCollection::dismiss_alert($alert_id);		
+		
+		if ($redirect) {
+			wp_redirect($redirect, '302');
+		}
 	}
 	
 	
@@ -715,12 +751,14 @@ class Admin {
 	
 	
 	public function bid( $id ) {
-		return $this->get_bid_vars($id);
+		$this->get_bid_vars($id);
 	}
 	
 	
 	
 	protected function get_bid_vars($id) {
+		$hitfigure = HitFigure::getInstance();
+		
 		$bidvars = array(
 			'lead_found'=>False,
 			'lead_is_valid'=>False,
@@ -730,7 +768,7 @@ class Admin {
 			'errors'=>Null,
 			'bid_placed'=>Null,
 			'min_amount'=>Null,
-			'yourbidamount'=>Null
+			'yourbidamount'=>Null,
 		);
 	
 		// Here we have to make sure that the Vehicle exists...
@@ -740,6 +778,9 @@ class Admin {
 			$bidvars['lead_found'] = False;
 		} else {
 			$bidvars['lead_found'] = True;
+			$title = "Bidding on ".$vehicle->post_title;
+			$hitfigure->vars->merge('title', $title);
+			$hitfigure->vars->add('pgheader',$title);			
 			
 			// Check out lead is valid
 			if ( !VehicleCollection::is_active($id) ) {
@@ -754,7 +795,7 @@ class Admin {
 				if ( !isset($_REQUEST['confirm']) && !isset($_REQUEST['revise']) && !isset($_REQUEST['submit']) ) {
 					$f = $this->place_bid_form($id, $min_amount);
 					$bidvars['placing_bid'] = True;
-					$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
+					$bidvars['min_amount'] = BidCollection::mf($min_amount);
 				}
 				
 				if ( isset($_REQUEST['submit'])	) {
@@ -764,34 +805,33 @@ class Admin {
 						// Probably do nothing, input validation will catch it
 						$bidvars['placing_bid'] = True;
 						$bidvars['errors'] = True;
-						$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
+						$bidvars['min_amount'] = BidCollection::mf($min_amount);
 					} else { // Validated!
 						$bidvars['confirming_bid'] = True;
 						$yourbidamount = $f->amount->value;
-						$bidvars['yourbidamount'] = money_format('$%i', $yourbidamount+0);
+						$bidvars['yourbidamount'] = BidCollection::mf($yourbidamount);
 						$f = $this->confirm_bid_form($id);
 					}
 				} elseif ( isset($_REQUEST['confirm']) ) {
 					$f = $this->confirm_bid_form($id);
 					$f->applyUserInput(True);
 					// Bid confirmed... just display a confirmation message
-					$yourbidamount = $f->amount->value;
-					$bid = BidCollection::place($f->amount->value,$id, $vehicle->post_title);
+					$yourbidamount 	= $f->amount->value;
+					$bid 			= BidCollection::place($f->amount->value,$id, $vehicle->post_title);
 					
-					$hitfigure = HitFigure::getInstance();
 					$hitfigure->trigger_action('bid_placed', array(
 						'vehicle'	=>$vehicle,
 						'bid'		=>$bid
 					));
 					
 					$bidvars['bid_placed'] = True;
-					$bidvars['yourbidamount'] = money_format('$%i', $yourbidamount+0);
+					$bidvars['yourbidamount'] = BidCollection::mf($yourbidamount);
 					$f = null;
 				} elseif ( isset($_REQUEST['revise']) ) {
 					// Back to the top...
 					$bidvars['placing_bid'] = True;
-					$bidvars['min_amount'] = money_format('$%i', $min_amount+0);
-					$f =$this->place_bid_form($id, $min_amount);
+					$bidvars['min_amount'] 	= BidCollection::mf($min_amount);
+					$f = $this->place_bid_form($id, $min_amount);
 				}
 			}
 		}
@@ -799,7 +839,8 @@ class Admin {
 		$form = $f ? $f->render() : '';
 		$vars = array('form'=>$form) + $vehicle->get_vars() + $bidvars;
 		
-		return $vars;	
+		
+		$hitfigure->vars->add($vars);
 	}
 	
 	

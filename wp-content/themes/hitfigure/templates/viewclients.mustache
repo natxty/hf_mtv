@@ -4,10 +4,10 @@
 
 {{>containerstart}}
 
-<table cellpadding="0" cellspacing="0" border="0" class="display" id="view-clients" data-type="{{type}}">
+<table cellpadding="0" cellspacing="0" border="0" class="display" id="view-clients" data-type="{{client_type}}">
 	<thead>
 		<tr>
-			<th width="20%">Manufacturer Name</th>
+			<th width="20%">{{client_name}} Name</th>
 			<th width="25%">City</th>
 			<th width="25%">State</th>
 			<th width="15%">Reports</th>
@@ -19,7 +19,7 @@
 	</tbody>
 	<tfoot>
 		<tr>
-			<th>Manufacturer Name</th>
+			<th>{{client_name}} Name</th>
 			<th>City</th>
 			<th>State</th>
 			<th>Reports</th>

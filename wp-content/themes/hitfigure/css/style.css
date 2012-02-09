@@ -119,6 +119,8 @@ input, textarea {
 	display: none; 
 }
 
+.p5 {padding: 5px;}
+
 .p20 {padding:20px}
 .pt20 {padding-top:20px}
 .pr20 {padding-right:20px}
@@ -543,8 +545,9 @@ body.page-home #bg-wrapper {
 				display: none;
 			}
 			
-			#id_vehicle_accidents_explain.Input, #id_vehicle_paintwork_performed_explain.Input, #wrapper-id_vehicle_paintwork_needed_explain .Input, #wrapper-id_vehicle_overall_condition .Input {
+			#id_vehicle_accidents_explain.TextArea, #id_vehicle_paintwork_performed_explain.TextArea, #id_vehicle_paintwork_needed_explain.TextArea, #id_vehicle_overall_condition.TextArea {
 				height: 100px;
+				float: right;
 			}
 			
 			.frontFormBtn {
@@ -564,6 +567,16 @@ body.page-home #bg-wrapper {
 				height: 100px;
 				margin: 0 0 12px;
 			}
+			
+			span.marker-required {
+				color: #BF1E2E;
+			}
+			
+			.required {
+				display: none;
+			}
+			
+			
 		
 		
 /*** DASHBOARD PAGES ***/
@@ -873,6 +886,34 @@ body.page-dashboard #header .fright {
 			font-weight: bold;
 			text-transform: uppercase;
 		}
+	
+	#register_client {
+		margin-left: 20px;
+	}
+		
+	#alert_email_opt_newbid_label, #alert_email_opt_outbid_label, #alert_email_opt_newlead_label, #alert_email_opt_won_label {
+		width: 180px;
+		padding-right: 0px;
+	}
+	
+	#wrapper-alert_email_opt_newbid_n, #wrapper-alert_email_opt_outbid_n, #wrapper-alert_email_opt_newlead_n, #wrapper-alert_email_opt_won_n {
+		padding-right: 20px;
+	}	
+	
+	#wrapper-alert_email_opt_newbid_n:after, #wrapper-alert_email_opt_outbid_n:after, #wrapper-alert_email_opt_newlead_n:after, #wrapper-alert_email_opt_won_n:after {
+		content: "."; display: block;height: 0;clear: both; visibility: hidden;
+	}
+	
+	.RadioGroup:after {
+		content: "."; display: block;height: 0;clear: both; visibility: hidden;
+	}
+		
+	/** Data Tables extras **/
+	
+	#view-leads-all_length {
+		margin-left: 10px;
+		margin-top: 3px;
+	}	
 	
 	/**
 	* Dashboard Alerts

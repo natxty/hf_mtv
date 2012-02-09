@@ -42,14 +42,15 @@ table.dataTable thead th, .dataTables td {
 	border-right: 1px solid #e1e1e1;
 }
 table.dataTable thead th {
-	background: #898989;
+	background: #3c3c3c;
 	height: 40px;
 	line-height: 16px;
 	color: #e1e1e1;
 	font-weight: bold;
-	font-size: 15px;
+	font-size: 13px;
 	padding: 10px;
-	text-transform: uppercase;
+	text-transform: capitalize;
+	border: 1px solid #C2C2C2;
 }
 table.dataTable thead th span {
 	font-size: 13px;

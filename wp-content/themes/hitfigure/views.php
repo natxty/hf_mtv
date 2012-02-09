@@ -41,14 +41,6 @@ function dashboard( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
-	//$hitfigure->vars->set_logging(true);
-	
-	$pagevars = array(
-		'title'		=>'Dashboard'
-	);
-	
-
-	
 	$hitfigure->admin->dashboard();	
 	$hitfigure->vars->merge('title', 'Dashboard');
 		
@@ -61,17 +53,14 @@ function view_leads( $request ) {
 	// View Leads
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
-
-	$pagevars = array(
+	
+	$hitfigure->vars->merge(array(
 		'title'		=>'View Leads',
 		'pgheader'	=>'View Leads',
 		'is_all'	=>True
-	);
+	));
 		
-	$vars = $hitfigure->page_vars($pagevars);
-	display_mustache_template('viewleads', $vars);
-	
-	
+	display_mustache_template('viewleads', $hitfigure->vars->get());
 }
 
 
@@ -81,16 +70,13 @@ function view_won_leads( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 		
-	$pagevars = array(
+	$hitfigure->vars->merge(array(
 		'title'		=>'View Won Leads',
 		'pgheader'	=>'View Won Leads',
 		'is_all'	=>False
-	);
+	));
 		
-	$vars = $hitfigure->page_vars($pagevars);
-	display_mustache_template('viewleads', $vars);
-	
-	
+	display_mustache_template('viewleads', $hitfigure->vars->get());	
 }
 
 
@@ -119,10 +105,9 @@ function lead( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
-	$adminvars = $hitfigure->admin->view_lead($id);	
-	
-	$vars = $hitfigure->template_vars($adminvars);
-	display_mustache_template('lead', $vars);
+	$hitfigure->admin->view_lead($id);
+
+	display_mustache_template('lead', $hitfigure->vars->get());
 }
 
 
@@ -134,10 +119,9 @@ function edit_client( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
-	$adminvars = $hitfigure->admin->edit_client($id);	
-	
-	$vars = $hitfigure->template_vars($adminvars);  
-	display_mustache_template('editclient', $vars);
+	$hitfigure->admin->edit_client($id);	
+
+	display_mustache_template('editclient', $hitfigure->vars->get());
 }
 
 
@@ -148,11 +132,19 @@ function new_client( $request ) {
 	
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+	
+	extract(client_type_to_name($type));
+	
+	$hitfigure->vars->merge(array(
+		'title'					=>'New ' . $name,
+		'pgheader'				=>'New ' . $name,
+		'client_type'			=>$type,
+		'client_name'			=>$name
+	));		
 
-	$adminvars = $hitfigure->admin->register_client($type);	
+	$hitfigure->admin->register_client($type);	
 
-	$vars = $hitfigure->template_vars($adminvars);
-	display_mustache_template('newclient', $vars);
+	display_mustache_template('newclient', $hitfigure->vars->get());
 }
 
 
@@ -161,11 +153,19 @@ function view_clients( $request ) {
 	// View Clients
 	$type	= $request['type']; // manufacturer / dealer / salesperson | accountant
 	
+	extract(client_type_to_name($type));
+	
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+		
+	$hitfigure->vars->merge(array(
+		'title'					=>'View ' . $pluralname,
+		'pgheader'				=>'View ' . $pluralname,
+		'client_type'			=>$type,
+		'client_name'			=>$name
+	));	
 	
-	$vars = $hitfigure->template_vars(array('type'=>$type)); 
-	display_mustache_template('viewclients', $vars);
+	display_mustache_template('viewclients', $hitfigure->vars->get());
 }
 
 
@@ -189,11 +189,10 @@ function alert( $request ) {
 
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
-	
-	$adminvars = $hitfigure->admin->view_alert($id);	
 
-	$vars = $hitfigure->template_vars($adminvars);
-	display_mustache_template('alert', $vars);
+	$hitfigure->admin->view_alert($id);
+
+	display_mustache_template('alert',  $hitfigure->vars->get());
 } 
 
 
@@ -203,8 +202,12 @@ function view_alerts( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 	
-	$vars = $hitfigure->template_vars(); 
-	display_mustache_template('viewalerts', $vars);	
+	$hitfigure->vars->merge(array(
+		'title'					=>'View Alerts' ,
+		'pgheader'				=>'View Alerts'
+	));		
+	
+	display_mustache_template('viewalerts', $hitfigure->vars->get());	
 }
 
 
@@ -220,6 +223,21 @@ function ajax_alert_data( $request ) {
 
 
 
+function dismiss_alert( $request ) {
+	$alert_id = $_REQUEST['id'];
+	$redirect = null;
+	if (isset($_REQUEST['redirect'])) {
+		$redirect = $_REQUEST['redirect'];
+	}
+
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
+	$hitfigure->admin->dismiss_alert($alert_id, $redirect);
+}
+
+
+
 function bid( $request ) {
 	// Bid
 	$id 	= $request['id']; // Lead (vehicle) ID
@@ -227,10 +245,9 @@ function bid( $request ) {
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
 
-	$adminvars = $hitfigure->admin->bid($id);	
+	$hitfigure->admin->bid($id);	
 
-	$vars = $hitfigure->template_vars($adminvars);
-	display_mustache_template('bid', $vars);
+	display_mustache_template('bid', $hitfigure->vars->get());
 }
 
 

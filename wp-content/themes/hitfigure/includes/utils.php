@@ -35,6 +35,8 @@ function get_page_queue($page) {
 	return $page_queue;
 }
 
+
+
 function state_select_form($id="state", $args = array()) {
 	
 	$s = new \Select($id);
@@ -95,3 +97,19 @@ function state_select_form($id="state", $args = array()) {
 
 	return $s;
 }
+
+
+
+function client_type_to_name($type) {
+	
+	if ($type == 'salesperson') {
+		$name 			= 'Sales Person';
+		$pluralname		= 'Sales People';
+	} else {
+		$name 			= ucfirst($type);
+		$pluralname 	= $name . 's';
+	}
+	
+	return array('name'=>$name,'pluralname'=>$pluralname);
+}
+
