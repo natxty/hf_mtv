@@ -10,30 +10,30 @@ $(document).ready(function() {
 	/* Page Progression + Validation click functions */
 	jQuery(".seller_form_container a.button").click(function() {
 
-        var id = $(this).closest("div").attr("id"); /* gather for validation purposes.. */
-        var next_page = $(this).attr("href");
+        var id = jQuery(this).closest("div").attr("id"); /* gather for validation purposes.. */
+        var next_page = jQuery(this).attr("href");
         if(debug) console.log("#" + id);
 
         var errors = false;
 
         /* validate select inputs */
-         $("#" + id + " select").each(function() {
+         jQuery("#" + id + " select").each(function() {
             /* look through our class declaration from our micro-templates and find */
             /* if the class="validate" is present (even in combination with other classes) */
-            var isValidate = $(this).parent().children('.required').length;
-            var selectID = $(this).attr('id');
+            var isValidate = jQuery(this).parent().children('.required').length;
+            var selectID = jQuery(this).attr('id');
             if(isValidate) { /* only check the ones with class="validate" */
-                var optionValue = $("#" + selectID + ' option:selected').val();
+                var optionValue = jQuery("#" + selectID + ' option:selected').val();
                 if(optionValue.length < 1) {
-                    $(this).parent().addClass('error');
+                    jQuery(this).parent().addClass('error');
                     errors = true;
                     if(debug) {
-                        var selectName = $(this).attr('name');
+                        var selectName = jQuery$(this).attr('name');
                         console.log(selectName + ":" + optionValue );
                     }
                 } else {
-                    $(this).parent().removeClass('error');
-					$(this).removeClass('error');
+                    jQuery(this).parent().removeClass('error');
+					jQuery(this).removeClass('error');
                 }
 
             }
@@ -45,20 +45,20 @@ $(document).ready(function() {
         jQuery("#" + id + " input[type=text]").each(function(n, element) {
             /* look through our class declaration from our micro-templates and find */
             /* if the class="validate" is present (even in combination with other classes) */
-            var isValidate = $(this).parent().children('.required').length;
+            var isValidate = jQuery(this).parent().children('.required').length;
 
             if(isValidate) { /* only check the ones with class="validate" */
-                var txtval = $(this).val();
+                var txtval = jQuery(this).val();
                 if(txtval.length < 1) {
-                    $(this).parent().addClass('error');
+                    jQuery(this).parent().addClass('error');
                     errors = true;
                     if(debug) {
-                        var inputName = $(this).attr('name');
+                        var inputName = jQuery(this).attr('name');
                         console.log(inputName + ":" + txtval );
-                        console.log(inputName + ":" + $(this).attr('class') );
+                        console.log(inputName + ":" + jQuery(this).attr('class') );
                     }
                 } else {
-                    $(this).parent().removeClass('error');
+                    jQuery(this).parent().removeClass('error');
                 }
 
 
@@ -73,13 +73,13 @@ $(document).ready(function() {
             if(debug) console.log(radioName);
 
             /* do we have a required child div? */
-            if($(this).children('.required').length) {
+            if(jQuery(this).children('.required').length) {
 
-                if ($('input[name='+ radioName +']:checked').length) {
-                    $(this).parent().removeClass('error');
+                if (jQuery('input[name='+ radioName +']:checked').length) {
+                    jQuery(this).parent().removeClass('error');
                   } else {
                     if(debug) console.log(radioName + ": none are checked");
-                    $(this).parent().addClass('error');
+                    jQuery(this).parent().addClass('error');
                     errors = true;
                 }
             }
@@ -92,15 +92,21 @@ $(document).ready(function() {
             
         } else {
             /* we're clear for lift-off */
-           $('.seller_form_container').hide();
-            $(next_page).fadeIn();
+           jQuery('.seller_form_container').hide();
+            jQuery(next_page).fadeIn();
         }
         /* make sure we stop the normal anchor/link function: */
 		return false;
 	});
-
-    /* wtf? */
-    MTV.debugging();
+	
+	/* Remove Error CSS if we have a positive change */
+	
+    jQuery(':input').live('change', function() {
+		if(jQuery(this).val()) 
+			jQuery(this).parent().removeClass('error');
+	});
+	
+    /* MTV.debugging(); */
 
     /* Main Select Elements + AJAX calls to get filtered options from the DB */
     /* Year => Makes */
@@ -173,21 +179,22 @@ $(document).ready(function() {
     * to update Select elements with filtered data
     * 
      */
-	function get_car_data(obj) {
-		/*  Set current to disabled, it'll get overwritten when we add the ajax result */
-		jQuery(obj.result_id).attr('disabled','disabled');
+	function get_car_data(a) {
+		/*  Set current to disabled, it'll get overwritten when we add the ajax result- nice touch, ColinPress! */
+		jQuery(a.result_id).attr('disabled','disabled');
 	
-        var resultType = 'car_' + obj.text;
-        var topOptionText = ucwords(obj.text);
+        var resultType = 'car_' + a.text;
+        var topOptionText = ucwords(a.text);
+		
 
 		MTV.do_ajax(
 			/*  global javascript variable */
 			'/ajax_form_data/',
-			obj.xdata,
+			a.xdata,
 			function( response ) {
                 /* if(debug) alert(response.length); */
-				jQuery(obj.result_id).parent().replaceWith(response.html);
-				if(debug) console.log(obj.debug);
+				jQuery(a.result_id).parent().replaceWith(response.html);
+				if(debug) console.log(a.debug);
 			},
             function(error) {
                 alert('error')

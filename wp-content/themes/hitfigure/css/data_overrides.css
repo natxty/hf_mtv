@@ -72,6 +72,39 @@ table.dataTable tr.even td, table.dataTable tr.even td.sorting_1 {
 	width: 90px;	
 }
 
+table.dataTable tbody a {
+	text-transform: uppercase;
+	font-weight: bold;
+	color: white !important;
+	text-align: center;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, .3);
+	text-decoration: none;
+	font-family: arial, helvetica, sans-serif;
+	font-size: 11px;
+	-moz-border-radius: 5px; 
+	-webkit-border-radius: 5px; 
+	text-shadow: 0 -1px 1px rgba(0,0,0,0.25); 
+	border: 1px solid rgba(0,0,0,.25); 
+	border-bottom-color: rgba(0,0,0,.35);
+	background: #8A0814;
+	background: -webkit-gradient( linear, left top, left bottom, color-stop(.2, #DE1B23), color-stop(1, #8A0814) );
+	background: -moz-linear-gradient( center top, #DE1B23 20%, #8A0814 100% );
+	-webkit-box-shadow: inset 0 1px 0 hsla(0,100%,100%,.3) /*Top*/, inset 0 0 2px hsla(0,100%,100%,.3) /*Shine*/, 0 1px 2px hsla(0, 0%, 0%, .29) /*Shadow*/;
+	-moz-box-shadow: inset 0 1px 0 hsla(0,100%,100%,.3) /*Top*/, inset 0 0 2px hsla(0,100%,100%,.3) /*Shine*/, 0 1px 2px hsla(0, 0%, 0%, .29) /*Shadow*/;
+	box-shadow: inset 0 1px 0 hsla(0,100%,100%,.3) /*Top*/, inset 0 0 2px hsla(0,100%,100%,.3) /*Shine*/, 0 1px 2px hsla(0, 0%, 0%, .29) /*Shadow*/;
+	cursor: pointer;
+	padding: 5px 10px;
+}
+
+table.dataTable tbody a:hover {
+	text-decoration: none !important;
+	background: #BD212F;
+	background: -webkit-gradient( linear, left top, left bottom, color-stop(.2, #A81724), color-stop(1, #BD212F) );
+	background: -moz-linear-gradient( center top, #A81724 20%, #BD212F 100% );
+}
+
+
+
 /*
 p.dashboard-note {color: #c1030c; font-size: 14px; font-weight: bold; margin-left: 15px;}
 

@@ -79,6 +79,9 @@
 			<a href="mailto:{{seller_email}}">{{seller_email}}</a><br />
 			{{seller_city}}, {{seller_state}} {{seller_zipcode}}</p>
 		{{/lead_view_seller_info}}
+		{{#lead_view_seller_email_form_button}}
+			<a href="/admin/email/{{vehicle_id}}" class="button frontFormBtn">Email the seller</a>
+		{{/lead_view_seller_email_form_button}}
 		
 	<!-- end right col -->
 	</div>

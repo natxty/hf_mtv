@@ -4,12 +4,6 @@
 
 {{>containerstart}}
 
-<div>
-	
-	<a href="{{vehicle_url}}" class="dash-return">Return to this vehicles details</a>
-	
-</div>
-
 {{^lead_found}}
 	<!-- No Lead Found... Output Message -->
 {{/lead_found}}
@@ -19,25 +13,29 @@
 {{/lead_is_valid}}
 
 {{#oktogo}}
+	<div>
+		<small>
+		<a href="{{vehicle_url}}">Return to this vehicles details</a>
+		</small>
+	</div>
+
 	{{#errors}}
 		<div>ERROR</div>
 		<!-- Our form should display our errors, so we can put something like a big red 'error' box here -->
 	{{/errors}}
 
-	{{#placing_bid}}
-		<strong>Minimum Bid:</strong> {{min_amount}}
-	{{/placing_bid}}
+	{{#form}}
+		<h3 class="lead-title">Seller Info</h3>
+		<p><strong>{{seller_firstname}} {{seller_lastname}}</strong><br />
+		<a href="mailto:{{seller_email}}">{{seller_email}}</a><br />
+		{{seller_city}}, {{seller_state}} {{seller_zipcode}}</p>
+	{{/form}}
 	
-	{{#confirming_bid}}
-		<strong>Confirm bid for {{yourbidamount}}</strong>
-	{{/confirming_bid}}
-	
-	{{#bid_placed}}
-		<strong>Bid placed for {{yourbidamount}}</strong>
-	{{/bid_placed}}
+	{{#email_sent}}
+		<strong>Email sent to <a href="mailto:{{seller_email}}">{{seller_email}}</a>!</strong>
+	{{/email_sent}}
 	
 	{{&form}}<!-- changes depending on what stage you're in -->
-	<p><i>*Please do not enter the dollar sign in your bid amount</i></p>
 	
 {{/oktogo}}
 

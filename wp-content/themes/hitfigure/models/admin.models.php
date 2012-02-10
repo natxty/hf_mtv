@@ -130,7 +130,7 @@ class DealerEmployee extends DealerAdmin {
 		$vars = parent::get_lead_data_vars();
 		remove_filter( 'posts_where', 'hitfigure\models\filter_where_registered_for_lead' );
 		
-		// Ok, now that we're done with that we can go back...see, no harm done!
+		// Ok, now that we're done with that we can reset it...see, no harm done!
 		$this->user = $current_user;
 		
 		return $vars;
@@ -146,6 +146,15 @@ class DealerEmployee extends DealerAdmin {
 
 class SalesPersonAdmin extends DealerEmployee {
 	
+	
+	protected function get_alert_email_opt_list() {
+		return array(
+			'newbid'	=>'New Bids',
+			'outbid'	=>'Outbid',
+			'newlead'	=>'New Leads',
+			'won'		=>'Won Leads'
+		);
+	}	
 
 }
 
@@ -160,5 +169,11 @@ class AccountantAdmin extends DealerEmployee {
 	protected function get_bid_vars($id) { 
 		$this->nopriv();
 	}
+	
+	protected function get_alert_email_opt_list() {
+		return array(
+			'won'		=>'Won Leads'
+		);
+	}	
 
 }

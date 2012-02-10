@@ -216,7 +216,7 @@ class Admin {
 			$this->add_additional_info_inputs($f);		
 		}
 		
-		$this->add_alert_email_opts($f);
+		$this->add_alert_email_opts($f, $type);
 		
 		$this->add_account_inputs($f, $id);
 		
@@ -257,7 +257,7 @@ class Admin {
 					$args = $this->get_new_client_form_args_dealer_employee($f, $id);
 				}
 				
-				$args = $args + $this->get_new_client_form_args_email_opts($f);
+				$args = $args + $this->get_new_client_form_args_email_opts($f,$type);
 				
 
 				switch($type) {
@@ -296,7 +296,7 @@ class Admin {
 					$this->set_edit_client_form_values_dealer_employee($f, $client);
 				}
 				
-				$this->set_edit_client_form_values_email_opts($f, $client);
+				$this->set_edit_client_form_values_email_opts($f, $client, $type);
 			}	
 		}	
 	
@@ -305,19 +305,25 @@ class Admin {
 	
 	
 	
-	protected function get_alert_email_opt_list() {
-		return array(
+	protected function get_alert_email_opt_list($type) {
+		$a = array(
 			'newbid'	=>'New Bids',
 			'outbid'	=>'Outbid',
 			'newlead'	=>'New Leads',
 			'won'		=>'Won Leads'
 		);
+		
+		if ($type == 'accountant') {
+			return array(); // Accountants don't get nuthin...
+		}
+		
+		return $a;
 	}
 	
 	
 	
-	protected function add_alert_email_opts($f) {
-		$opt_list = $this->get_alert_email_opt_list();
+	protected function add_alert_email_opts($f, $type) {
+		$opt_list = $this->get_alert_email_opt_list($type);
 		foreach( $opt_list as $name=>$text) {
 			$this->get_alert_email_radioboxes($text, 	'alert_email_opt_'.$name, 	$f);
 		}
@@ -547,9 +553,9 @@ class Admin {
 	
 	
 	
-	protected function get_new_client_form_args_email_opts($f) {
+	protected function get_new_client_form_args_email_opts($f, $type) {
 		$args = array();
-		$opt_list = $this->get_alert_email_opt_list(); 
+		$opt_list = $this->get_alert_email_opt_list($type); 
 		
 		foreach($opt_list as $name=>$text) {
 			$id = 'alert_email_opt_'.$name;
@@ -561,8 +567,8 @@ class Admin {
 
 
 
-	protected function set_edit_client_form_values_email_opts($f, $client) {
-		$opt_list = $this->get_alert_email_opt_list(); 
+	protected function set_edit_client_form_values_email_opts($f, $client, $type) {
+		$opt_list = $this->get_alert_email_opt_list($type); 
 		
 		foreach($opt_list as $name=>$text) {
 			$id = 'alert_email_opt_'.$name;
@@ -601,9 +607,14 @@ class Admin {
 		$highest_amount 		= BidCollection::getHighestBid($vehicle->id);
 		$your_highest_amount 	= BidCollection::yourHighestBid($vehicle->id);
 		$bid_status 			= $this->bid_status_text(BidCollection::bidStatus($vehicle->id));
-				
-		if ( ($this->role == 'administrator') || ($vehicle->expired_with_winner() == $this->user->id) ) {
+		
+		$expired_with_winner = $vehicle->expired_with_winner() == $this->user->id;
+		
+		if ( ($this->role == 'administrator') || $expired_with_winner ) {
 			$hitfigure->vars->add('lead_view_seller_info',True);
+			if ($expired_with_winner) {
+				$hitfigure->vars->add('lead_view_seller_email_form_button', True);
+			}
 		}
 		
 		$bidvars = array(
@@ -776,16 +787,24 @@ class Admin {
 		
 		if (!$vehicle) {
 			$bidvars['lead_found'] = False;
-		} else {
-			$bidvars['lead_found'] = True;
-			$title = "Bidding on ".$vehicle->post_title;
+			$title = 'Not Found';
 			$hitfigure->vars->merge('title', $title);
-			$hitfigure->vars->add('pgheader',$title);			
+			$hitfigure->vars->add('pgheader',$title);
+			
+		} else {
+			$bidvars['lead_found'] = True;		
 			
 			// Check out lead is valid
 			if ( !VehicleCollection::is_active($id) ) {
 				$bidvars['lead_is_valid'] = False;
+				$title = "Lead Expired";
+				$hitfigure->vars->merge('title', $title);
+				$hitfigure->vars->add('pgheader',$title);					
 			} else {
+				$title = "Bidding on ".$vehicle->post_title;
+				$hitfigure->vars->merge('title', $title);
+				$hitfigure->vars->add('pgheader',$title);
+								
 				$bidvars['lead_is_valid'] = True;
 				
 				$bidvars['oktogo'] = True;
@@ -917,5 +936,129 @@ class Admin {
 		$vars['hide_add_accountant'] 	= True;
 		
 		return $vars + $this->user->get_vars();
+	}
+	
+	
+	
+	public function email_seller_form($vehicle_id) {
+		$vehicle = VehicleCollection::get_by_id($vehicle_id);
+		
+		if ($this->set_lead_status_seller_email_vars($vehicle)) {
+			$this->get_email_seller_form_vars($vehicle);
+		}
+	} 
+	
+	
+	public function set_lead_status_bid_vars($vehicle) {
+		// Returns true if lead is found and is active, IE 'ok2go'
+		$hitfigure = HitFigure::getInstance();
+		
+		// Check if lead is found
+		if (!$vehicle) {
+			$title = 'Not Found';
+			$hitfigure->vars->merge('title', $title);
+			$hitfigure->vars->add('pgheader',$title);
+			$hitfigure->vars->add('lead_found',false);
+			
+		} else {
+			$hitfigure->vars->add('lead_found',true);
+			
+			// Check if lead is active
+			if ( !VehicleCollection::is_active($vehicle->id) ) {
+				$hitfigure->vars->add('lead_is_valid',false);
+				$title = "Lead Expired";
+				$hitfigure->vars->merge('title', $title);
+				$hitfigure->vars->add('pgheader',$title);				
+			} else {
+				$hitfigure->vars->add('lead_is_valid',true);
+				$hitfigure->vars->add('oktogo',true);
+				return true;
+			}
+		}	
+	}
+	
+	
+	
+	public function set_lead_status_seller_email_vars($vehicle) {
+		// Returns true if lead is found, expired, and the current user should be able to email the seller, IE 'ok2go'
+		$hitfigure = HitFigure::getInstance();
+		
+		// Check if lead is found
+		if (!$vehicle) {
+			$title = 'Not Found';
+			$hitfigure->vars->merge('title', $title);
+			$hitfigure->vars->add('pgheader',$title);
+			$hitfigure->vars->add('lead_found',false);
+			
+		} else {
+			$hitfigure->vars->add('lead_found',true);
+			
+			// Check if lead is expired and the current user is the winner
+			if ( $vehicle->expired_with_winner() != $this->user->id ) {
+				$this->nopriv(); // Stop right there!			
+			} else {
+				$hitfigure->vars->add('lead_is_valid',true);
+				$hitfigure->vars->add('oktogo',true);
+				return true;
+			}
+		}	
+	}
+	
+	
+	
+	protected function get_email_seller_form_vars($vehicle) {
+		$hitfigure = HitFigure::getInstance();
+		
+		$title = 'Send email to seller of '.$vehicle->post_title;
+		$hitfigure->vars->merge('title', $title);
+		$hitfigure->vars->add('pgheader',$title);
+	
+		$f = new \FormHelper('email_seller_form');
+		$f->method = 'POST';
+		
+		$t = new \TextArea('email_message');
+		$t->setProperties(array(
+			'name'		=>'email_message',
+			'text'		=>'Message',
+			'required'	=>True
+		));
+		$f->add($t);
+		
+		$b = new \Button('submit');
+		$b->setProperties(array(
+			'name'	=>'submit',
+			'value'	=>'submit',
+			'text'	=>'Submit'
+		));
+		$f->add($b);
+
+	
+		if ( isset($_REQUEST['submit'])) {
+			$f->applyUserInput(True);
+			if (!$f->validate()) {
+				// Missing a required field?
+				// Throw the form back at them...
+				$hitfigure->vars->add('form',$f->render());	
+			} else {
+				// Send that email!!!
+				$hitfigure->trigger_action('email_seller', array(
+					'vehicle'	=> $vehicle,
+					'message'	=> $t->value
+				));
+				
+				// Modify our title
+				$title = 'Sent email to seller of '.$vehicle->post_title;
+				$hitfigure->vars->merge('title', $title);
+				$hitfigure->vars->merge('pgheader',$title);				
+				
+				$hitfigure->vars->add('email_sent', True);
+			}
+		} else {
+			// Give them the form...
+			$hitfigure->vars->add('form',$f->render());
+		}
+	
+		
+		$hitfigure->vars->add($vehicle->get_vars());
 	}
 }

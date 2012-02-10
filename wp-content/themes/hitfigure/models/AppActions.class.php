@@ -81,6 +81,11 @@ class AppActions {
 				$vehicle->seller_confirm_new_lead_email($dealer_vars);
 				
 				break;
+			case 'email_seller':
+				$vehicle	= $args['vehicle'];
+				$message	= $args['message'];
+				
+				$vehicle->seller_client_to_seller_email($message);
 		}
 	
 	}

@@ -255,7 +255,13 @@ function bid( $request ) {
 function email_seller( $request ) {
 	// Email Seller
 	$id 	= $request['id']; // Lead (vehicle) ID
-	echo $id;
+
+	$hitfigure = HitFigure::getInstance();
+	$hitfigure->is_logged_in();
+	
+	$hitfigure->admin->email_seller_form($id);
+	
+	display_mustache_template('email_seller', $hitfigure->vars->get());
 }
 
 

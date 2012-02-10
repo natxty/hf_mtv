@@ -31,12 +31,13 @@ class HitFigure {
 		$this->app_actions 	= new AppActions();
 		$this->front_end	= new Frontend();
 		$this->vars			= new TemplateVariablesContainer();
-		
-		// Set our default template variables...
-		$this->init_template_vars();
-		
+			
 		// Check if we're logged in...
 		$this->instantiate_admin();
+
+		// Set our default template variables...
+		$this->init_template_vars();
+
 	}
 
 
@@ -83,7 +84,7 @@ class HitFigure {
 	
 	private function init_template_vars() {
 		if ( $this->admin ) {
-			$this->vars->add($this->admin->get_admin_vars());
+			$this->vars->add($this->admin->get_admin_vars());			
 		}
 		
 		$this->vars->add($this->get_wp_data());
@@ -293,6 +294,8 @@ class HitFigure {
    	 	$to = 'dev@magneticcreative.com';
 		
 		//mail($to, $subject, $message, $headers);
+		//slam that fuggah down to null to see just the HTML
+		//$amputated = null;
 		
 		if($amputated) {
 			//1. prep our non-html version(s)
@@ -314,20 +317,16 @@ class HitFigure {
 			
 			//3. put it all together!
 			
-			$body = "$notice_text
-	
---$mime_boundary
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-$plain_text
-
---$mime_boundary
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-$message
---$mime_boundary--"; 
+			$body = "$notice_text\r\n\r\n";
+			$body .= "--$mime_boundary\r\n";
+			$body .="Content-Type: text/plain; charset=UTF-8\r\n";
+			$body .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+			$body .= "$plain_text\r\n";
+			$body .= "--$mime_boundary\r\n";
+			$body .= "Content-Type: text/html; charset=UTF-8\r\n";
+			$body .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
+			$body .= "$message\r\n";
+			$body .="--$mime_boundary--"; 
 
 		} else {
 			//no partial, stick to just email for the moment

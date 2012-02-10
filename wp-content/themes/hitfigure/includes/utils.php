@@ -113,3 +113,13 @@ function client_type_to_name($type) {
 	return array('name'=>$name,'pluralname'=>$pluralname);
 }
 
+
+
+function nl2p($string, $class='') { 
+    $class_attr = ($class!='') ? ' class="'.$class.'"' : ''; 
+    return 
+        '<p'.$class_attr.'>' 
+        .preg_replace('#(<br\s*?/?>\s*?){2,}#', '</p>'."\n".'<p'.$class_attr.'>', nl2br($string, true)) 
+        .'</p>'; 
+} 
+

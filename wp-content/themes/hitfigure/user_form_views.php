@@ -685,10 +685,41 @@ function contact() {
 */
 
 function ajax_form_data($request) {
-
+	
     $post_data 	= json_decode(str_replace("\\", "", $_POST['data']));
     $action 	= $post_data->action;
-    $xdata 		= (array)$post_data->data;
+    $zdata 		= (array)$post_data->data;
+	
+	/**
+	* running into a weird IE thing where the array is diff... 
+	* so gonna map the values directly 
+	*/
+	if(isset($zdata['car_year'])) { 
+		if(is_array($zdata['car_year'])) {
+			$xdata['car_year'] = $zdata['car_year'][0];
+		} else {
+			$xdata['car_year'] = $zdata['car_year'];
+		}
+	}
+	
+	if(isset($zdata['car_make'])) { 
+		if(is_array($zdata['car_make'])) {
+			$xdata['car_make'] = $zdata['car_make'][0];
+		} else {
+			$xdata['car_make'] = $zdata['car_make'];
+		}
+	}
+	
+	if(isset($zdata['car_model'])) { 
+		if(is_array($zdata['car_year'])) {
+			$xdata['car_model'] = $zdata['car_model'][0];
+		} else {
+			$xdata['car_model'] = $zdata['car_model'];
+		}
+	}
+	
+	//mail('n@magneticcreative.com', 'json debug', print_r($xdata, true));
+	
     switch($action) {
         case 'vehicle_makes':
             $data = get_car_makes($xdata, 'ASC', true);
@@ -739,6 +770,8 @@ function get_car_makes($car_data, $order = 'DESC', $json=false) {
 	foreach($makes as $make) {
 		$s->add_option('opt',array('text'=>$make->car_make,'value'=> $make->car_make));
 	}
+	
+	
 
 	if (!$json) {
 		return $s;

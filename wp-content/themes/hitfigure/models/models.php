@@ -84,6 +84,16 @@ class VehicleCollection extends PostCollection {
 		return $vehicles;		
 	}
 	
+	public static function is_expired( $id ) {
+		add_filter( 'posts_where', 'hitfigure\models\filter_where_48hours_past');
+		$vehicle = self::get_by_id( $id ); 
+		remove_filter( 'posts_where', 'hitfigure\models\filter_where_48hours_past' );
+				
+		if ($vehicle) {
+			return $vehicle;
+		}
+	}	
+	
 }
 
 
@@ -183,9 +193,9 @@ class Vehicle extends Post {
 	}
 	
 	public function expired_with_winner() {
-		if (!$this->time_left) {
-			if ($winner_id = $this->winner_id) {
-				return $winner_id;
+		if (!$this->time_left()) { // Expired
+			if ( (int)$this->post_meta['winner_id'] ) {
+				return (int)$this->post_meta['winner_id'];
 			} else {
 				$client = BidCollection::getHighestBidder($this->id);
 				return $client->id;
@@ -331,6 +341,25 @@ class Vehicle extends Post {
 
 		$hitfigure = HitFigure::getInstance();
 		$hitfigure->send_email("Thanks for submitting your vehicle!", $html, $this->post_meta['seller_email'], "HitFigure@Hitfigure.com", $message);		
+	}
+	
+	
+	public function seller_client_to_seller_email($message) {
+		$hitfigure 	= HitFigure::getInstance();
+		$vars 		= array('message'=>nl2p(stripslashes($message))) + $hitfigure->get_wp_data() + $this->get_vars() + $hitfigure->admin->user->get_vars();
+		
+		$amputated 	= display_mustache_template('sellerclienttoselleremail', $vars, False);
+		
+		$sender_name 	= $hitfigure->admin->user->business_name;
+		$sender_email	= $hitfigure->admin->user->data->user_email;
+		
+		$vars = $hitfigure->get_wp_data(array(
+			'message'		=>$amputated,
+			'vehicle_name'	=>$this->post_title,
+			'hf_says'		=>"Message from " . $sender_name
+		));		
+		$html = display_mustache_template('emailshell', $vars, false);
+		$hitfigure->send_email("New Message from ".$sender_name, $html, $this->post_meta['seller_email'], $sender_email, $amputated);
 	}
 	
 }
@@ -990,9 +1019,13 @@ class Client extends User {
     
     public function can_recieve_alert_for($type) {
     	// Check user prefs
+    	if (in_array('accountant',$this->roles)) {
+    		return false;
+    	}
+    	
     	$value = get_user_meta($this->id, 'alert_email_opt_'.$type, true);
     	if ($value != 'No') { // Not all users will have these set, so assume it's yes
-    		return True;
+    		return true;
     	}
      }
     
