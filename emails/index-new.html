@@ -1,0 +1,186 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Hit Figure Email</title>
+<style type="text/css">
+body {
+	background-color: #ebebeb;
+}
+
+p {color: #000000;
+    font-family: Arial;
+    font-size: 14px;
+    text-align: left;
+	/*margin: 0px;*/
+}
+
+p.small {
+	font-size:10px;
+}
+
+p.bidAmount {
+	font-size: 18px;
+	color: #ef1e2e;
+	font-style:italic;
+	font-weight:bold;
+	margin-bottom: 0px;
+	margin-left: 30px;
+}
+
+p.bidDetails {
+	margin-left: 30px;	
+}
+
+a {
+	color: #ef1e2e;
+}
+
+a.social {
+	color: #336699;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+h3 {
+	font-family:Arial, Helvetica, sans-serif;
+	font-style: italic;
+    font-weight: bold;
+	font-size: 18px;
+	color: #505050;
+	/*margin: 0px;*/	
+}
+
+h4 {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 18px;
+    font-style: italic;
+    font-weight: bold;
+    line-height: 18px;
+	color:#505050;
+	margin: 0px;
+}
+
+</style>
+</head>
+
+<body bgcolor="#ebebeb">
+
+<center>
+
+	<table width="699" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+      <tr>
+        <td width="30" align="left" valign="top" bgcolor="#ffffff"><img src="images/spacer-wht.jpg" width="30" height="30" style="display:block" /></td>
+        <td width="639" align="left" valign="top" bgcolor="#ffffff">
+            <img src="images/spacer-wht-full.jpg" width="635" height="10" style="display:block" />
+            <table width="639" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="320" align="left" valign="top"><p class="small">Hitfigure says: {{hf_says}}: {{vehicle_name}}</p></td>
+                <td width="318" align="right" valign="top"><p class="small">Email not displaying correctly? &nbsp;<a href="{{siteurl}}/admin/lead/{{vehicle_id}}" target="_blank">Access the vehicle directly</a>.</p></td>
+              </tr>
+              <tr>
+                <td colspan="2"><img src="images/spacer-wht-full.jpg" width="635" height="10" style="display:block" /></td>
+              </tr>
+            </table>
+        
+        </td>
+        <td width="30" align="left" valign="top" bgcolor="#ffffff"><img src="images/spacer-wht.jpg" width="30" height="30" style="display:block" /></td>
+      </tr>
+      <tr>
+        <td colspan="3" bgcolor="#ffffff"><img src="images/hdr_vehicle_submitted.jpg" width="699" height="141" style="display:block" /></td>
+      </tr>
+      <tr>
+        <td width="30" bgcolor="#ffffff"><img src="images/spacer-wht.jpg" width="30" height="30" style="display:block" /></td>
+        <td width="639" bgcolor="#ffffff"><img src="images/spacer-wht-full.jpg" width="635" height="30" style="display:block" /></td>
+        <td width="30" bgcolor="#ffffff"><img src="images/spacer-wht.jpg" width="30" height="30" style="display:block" /></td>
+      </tr>
+      <tr>
+        <td width="30" bgcolor="#ffffff">&nbsp;</td>
+        <td width="639" bgcolor="#ffffff">
+
+<!-- // Begin Template Body \\ -->
+
+			<p><strong>Hello {{user_business_name}},</strong></p>
+            
+            <p>The bidding is now closed for your vehicle and we're excited to say that we have a winning buyer.</p>
+            <p>It's time for the big reveal. Drumroll, please...</p>
+            <p class="bidAmount">Top Bid Amount: $bidAmount</p>
+            <p class="bidDetails">Dealership: &nbsp;{{user_business_name}}<br />
+            attn: {{user_first_name}} {{user_last_name}}<br />
+            {{user_address1}}<br />
+            {{#user_address2}}{{user_address2}}{{/user_address2}}<br />
+            {{user_city}}, {{user_state}} {{user_zipcode}}<br />
+            {{user_phone}}</p>
+            
+            
+<!-- Whats Next Box -->
+			<img src="images/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+			<img src="images/divider_grey.gif" width="639" height="2" style="display:block" />
+            <img src="images/spacer-wht-full.jpg" width="635" height="10" style="display:block" />
+       		<h3>What's Next?</h3>
+			<p>At this point, it's up to you to move forward however you feel comfortable. If you're happy with the offer, contact the dealer directly and determine final steps to complete the sale (which typically consists of a simple vehicle inspection). If, however, you're not ready to pull the trigger, you are under no obligation to take any additional steps. Feel free to let the dealer know you are not interested at this time.</p>
+            
+			<p>Thanks for using HitFigure. Come back soon!</p>
+            
+			<p>~The HitFigure Team</p>
+            <img src="images/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+              
+<!-- End Whats Next Box -->
+
+                                                          
+<!-- Helpful Resources Box -->
+            <table width="639" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+              	<td width="30" height="15" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+              </tr>
+              <tr>
+                <td width="30" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="30" style="display:block" /></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><h4>Helpful Resources &raquo;</h4></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><a href="{{siteurl}}/faqs/" title="Hitfigure FAQ Page"><img src="images/btn_faq_page.gif" alt="Hitfigure FAQ Page" border="0" title="Hitfigure FAQ Page" /></a></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><a href="{{siteurl}}/contact/" title="Contact Hitfigure"><img src="images/btn_contact.gif" alt="Contact Hitfigure" border="0" title="Contact Hitfigure" /></a></td>
+                <td width="30" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="30" style="display:block" /></td>
+              </tr>
+              <tr>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="images/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+              </tr>
+            </table>
+<!-- End Helpful Resources Box -->
+
+
+<!-- // End Template Body \\ -->
+
+          <img src="images/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+       	  <p>Please do not respond to this email. If you need assistance, contact HitFigure using the information <a href="http://www.hitfigure.com/contact">found here</a>. We're happy to help...</p>
+          <img src="images/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+        </td>
+        <td width="30" bgcolor="#ffffff">&nbsp;</td>
+      </tr>
+      <tr>
+        <td width="30" bgcolor="#ffffff">&nbsp;</td>
+        <td width="639" align="left" valign="top" bgcolor="#ffffff"><img src="images/divider_grey.gif" width="639" height="2" style="display:block" />
+        	<img src="images/spacer-wht-full.jpg" width="635" height="10" style="display:block" />
+            <p class="small"><a href="http://twitter.com/hitfigure" class="social">follow on Twitter</a>&nbsp; | &nbsp;<a href="http://facebook.com/hitfigure" class="social">friend on Facebook</a></p>
+            
+            <p class="small">
+            	<em>Copyright &copy; {{date_year}}, All rights reserved.</em><br /><br />
+            	<strong>Our mailing address is:</strong><br />
+                1111 Hitfigure Ave. Suite 666<br />Hot Springs, CA 91029
+            </p>
+            <img src="images/spacer-wht-full.jpg" width="635" height="30" style="display:block" />
+        </td>
+        <td width="30" bgcolor="#ffffff">&nbsp;</td>
+      </tr>
+    </table>
+
+</center>
+
+</body>
+</html>

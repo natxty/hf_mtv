@@ -310,29 +310,29 @@ class HitFigure {
 			
 			//3. make some new headers:		
 			$headers .= "MIME-Version: 1.0\r\n";
-			$headers .= "Content-Type: multipart/mixed;\n" .  "     boundary=" . $mime_boundary_header;
+			$headers .= "Content-Type: multipart/alternative;\n" .  "     boundary=" . $mime_boundary_header;
 			
 			//3. put it all together!
 			
 			$body = "
 
 --$mime_boundary
-Content-Type: text/plain; charset\"iso-8859-1\"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 $plain_text
 
-$mime_boundary
-Content-Type: text/html; charset=\"iso-8859-1\"
+--$mime_boundary
+Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 $message
-$mime_boundary--"; 
+--$mime_boundary--"; 
 
 		} else {
 			//no partial, stick to just email for the moment
 			$headers  .= 'MIME-Version: 1.0' . "\r\n";
-			$headers .= 'Content-type: text/html; charset=\"iso-8859-1\"' . "\r\n";
+			$headers .= 'Content-type: text/html; charset="utf-8"' . "\r\n";
 			$body = $message;
 			
 		}

@@ -45,6 +45,16 @@ class BasicAdmin extends Admin {
 
 
 class DealerAdmin extends BasicAdmin {
+
+	protected function get_view_clients_vars($type) {
+		// Dealers can view Sales People and Accountants
+		if ( ($type == 'salesperson') || ($type == 'accountant') ) {
+			return parent::get_view_clients_vars($type);
+		} else {
+			$this->nopriv();
+		}	
+	}
+
 	protected function register_client_vars( $type ) {
 		// Dealers can create Sales People and Accountants
 		if ( ($type == 'salesperson') || ($type == 'accountant') ) {
@@ -73,6 +83,14 @@ class DealerAdmin extends BasicAdmin {
 
 
 class ManufacturerAdmin extends BasicAdmin {
+
+	protected function get_view_clients_vars($type) {
+		if ($type == 'dealer') { // Manufacturers can only view dealers
+			return parent::get_view_clients_vars($type);
+		} else {
+			$this->nopriv();
+		}	
+	}
 
 	protected function register_client_vars( $type ) {
 		if ($type == 'dealer') { // Manufacturers can only create dealers
@@ -161,6 +179,10 @@ class SalesPersonAdmin extends DealerEmployee {
 
 
 class AccountantAdmin extends DealerEmployee {
+
+	protected function get_view_all_leads_vars() {
+		$this->nopriv();
+	}
 
 	protected function get_view_lead_vars( $vehicle ) {
 		$this->nopriv();

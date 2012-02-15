@@ -1,3 +1,4 @@
+{{#has_current_alerts}}
 <h3 class="lead-title">Current Alerts</h3>
 <ul class="dash-alerts-list">
 	{{#current_alerts}}
@@ -5,4 +6,8 @@
 		
 	</li>
 	{{/current_alerts}}
+	<div class="wrapper-view_all_alerts">
+		<a class="view_all_alerts" href="/admin/alerts/">View all alerts</a>
+	</div>
 </ul>
+{{/has_current_alerts}}

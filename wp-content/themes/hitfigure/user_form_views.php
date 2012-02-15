@@ -24,7 +24,13 @@ function how_it_works() {
 		'id' => 'id_vehicle_vin',
 		'name' =>'vehicle_vin',
 		'text' =>'VIN',
-		'required'=>False
+		'required'=>False,
+		'validate_func'=>function($self) use($f) {
+			if ($self->value && strlen($self->value) != 17) {
+				return "Enter a correct VIN.";
+			}
+			return True;
+		}
 	));
     $f->add($s);
 
@@ -73,13 +79,21 @@ function how_it_works() {
     $s->add_option('opt',array('text'=>'Manual', 'value' => 'Manual'));
 	$f->add($s);
 
+//ereg_replace("[^0-9]", "", $x)
+
     /* Mileage */
     $s = new \Input('vehicle_mileage');
     $s->setProperties(array(
 		'id' => 'id_vehicle_mileage',
 		'name' =>'vehicle_mileage',
 		'text' =>'Mileage',
-		'required'=>True
+		'required'=>True,
+		'validate_func'=>function($self) use($f) {
+			if (!ereg_replace("[^0-9]", "", $self->value)) {
+				return "Enter accurate mileage.";
+			}
+			return True;
+		}
 	));
     $f->add($s);
 
@@ -190,10 +204,10 @@ function how_it_works() {
     /* Smoker Label */
     $l = new \Label('vehicle_smoker_label');
     $l->setProperties(array(
-                          'id' => 'id_vehicle_smoker_label',
+              'id' => 'id_vehicle_smoker_label',
 						  'text' => 'Smoker?',
-                          'class' => 'radio smoker'
-                      ));
+              'class' => 'radio smoker'
+              ));
     $f->add($l);
 
     /* Smoker? */

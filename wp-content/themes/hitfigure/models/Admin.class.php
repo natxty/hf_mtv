@@ -17,10 +17,9 @@ class Admin {
 		$this->role = $role;
 		$this->user = ClientCollection::get_current();
 	}
-	
-	
-	
-	
+
+
+
 	protected function nopriv() {
 		$hitfigure = HitFigure::getInstance();
 		display_mustache_template('nopriv', $hitfigure->template_vars());
@@ -132,6 +131,10 @@ class Admin {
 			'pgheader'					=> $this->user->business_name
 		);
 		
+		if (count($current_alerts)) {
+			$hitfigure->vars->add('has_current_alerts', True);
+		}
+		
 		$hitfigure->vars->add($args);
 		
 		return $args;	
@@ -139,6 +142,12 @@ class Admin {
 
 
 
+	public function set_current_nav_link($page) {
+		$hitfigure = HitFigure::getInstance();
+		$hitfigure->vars->merge('is_'.$page,'current');	
+	}
+	
+	
 
 	public function register_client( $type ) {
 		$this->register_client_vars($type);
@@ -149,7 +158,8 @@ class Admin {
 	protected function register_client_vars( $type ) {
 		$form = $this->update_client($type);
 		$hitfigure = HitFigure::getInstance();
-		$hitfigure->vars->add('form', $form);		
+		$hitfigure->vars->add('form', $form);
+		$this->set_current_nav_link('register_client_'.$type);	
 	}
 
 
@@ -183,6 +193,12 @@ class Admin {
 
 		$hitfigure->vars->merge("title", $title);
 		$hitfigure->vars->merge("pgheader", $pgheader);
+		
+		if($client->id == $this->user->id) {
+			$this->set_current_nav_link('edit_profile');
+		} else {
+			$this->set_current_nav_link('edit_client_'.$type);
+		}
 	}
 	
 	
@@ -1060,5 +1076,79 @@ class Admin {
 	
 		
 		$hitfigure->vars->add($vehicle->get_vars());
+	}
+
+
+	
+	public function view_clients($type) {
+		$this->get_view_clients_vars($type);
+	}
+	
+	
+	
+	protected function get_view_clients_vars($type) {
+		$hitfigure = HitFigure::getInstance();
+		
+		extract(client_type_to_name($type));
+		
+		$hitfigure->vars->merge(array(
+			'title'					=>'View ' . $pluralname,
+			'pgheader'				=>'View ' . $pluralname,
+			'client_type'			=>$type,
+			'client_name'			=>$name
+		));			
+	}
+
+
+
+	public function view_alerts() {
+		$this->get_view_alerts_vars();
+	}
+	
+	
+	
+	protected function get_view_alerts_vars() {
+		$hitfigure = HitFigure::getInstance();
+		
+		$hitfigure->vars->merge(array(
+			'title'					=>'View Alerts' ,
+			'pgheader'				=>'View Alerts'
+		));			
+	}
+	
+	
+	
+	public function view_leads($type) {
+		switch ($type) {
+			case 'won':
+				$this->get_view_won_leads_vars();
+				break;
+			default:
+				$this->get_view_all_leads_vars();
+		}
+	}
+	
+	
+	
+	protected function get_view_all_leads_vars() {
+		$hitfigure = HitFigure::getInstance();
+	
+		$hitfigure->vars->merge(array(
+			'title'		=>'View Leads',
+			'pgheader'	=>'View Leads',
+			'is_all'	=>True
+		));	
+	}
+	
+	
+	
+	protected function get_view_won_leads_vars() {
+		$hitfigure = HitFigure::getInstance();
+		
+		$hitfigure->vars->merge(array(
+			'title'		=>'View Won Leads',
+			'pgheader'	=>'View Won Leads',
+			'is_all'	=>False
+		));	
 	}
 }

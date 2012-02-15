@@ -1,51 +1,58 @@
+<!-- // Begin Template Body \\ -->
 
-                                    <!-- // Begin Template Body \\ -->
-                                	<table border="0" cellpadding="10" cellspacing="0" width="600" id="templateBody">
-                                    	<tr>
-                                        	<td valign="top" class="bodyContent">
-                                            
-                                                <!-- // Begin Module: Standard Content \\ -->
-                                                <table border="0" cellpadding="10" cellspacing="0" width="100%">
-                                                    <tr>
-                                                        <td valign="top">
-                                                            <div>
-																<p>Hello {{user_business_name}},</p>
-															
-																<p>It's time for the big reveal. Drumroll, please...</p>
-																<table>
-																	<tr>
-																		<td><p>Top Bid Amount: $bidAmount</p></td>
-																		<td>Dealership:<br />
-																		{{user_business_name}}<br />
-																		attn: {{user_first_name}} {{user_last_name}}<br />
-																		{{user_address1}}<br />
-																		{{#user_address2}}{{user_address2}}<br />{{/user_address2}}
-															  			{{user_city}} {{user_state}} {{user_zipcode}}<br />
-																		{{user_phone}}
-																		</td>
-																	</tr>
-																</table>
-																
-															  <img src="{{imgdir}}/email/divider_grey.gif" />
-															  
-															  <h4 class="h4">What's Next?</h4>
-															  
-															  <p>At this point, it's up to you to move forward however you feel comfortable. If you're happy with the offer, contact the dealer directly and determine final steps to complete the sale (which typically consists of a simple vehicle inspection). If, however, you're not ready to pull the trigger, you are under no obligation to take any additional steps. Feel free to let the dealer know you are not interested at this time.</p>
-															  <p>SThanks for using HitFigure. Come back soon!</p>
-															  <p>~The HitFigure Team</p>
-															  
-															  <div class="inset">
-															  	<strong>Helpful Resources &raquo;</strong> <a href="{{siteurl}}/faqs/" title="Hitfigure FAQ Page"><img src="{{imgdir}}/email/btn_faq_page.gif" alt="Hitfigure FAQ Page" title="Hitfigure FAQ Page" /></a> <a href="{{siteurl}}/contact/" title="Contact Hitfigure"><img src="{{imgdir}}/email/btn_contact.gif" alt="Contact Hitfigure" title="Contact Hitfigure" /></a>
-															  </div>
-															  
-                                                              <p>Please do not respond to this email. If you need assistance, contact HitFigure using the information found here. We're happy to help..
-														  </div>
-														</td>
-                                                    </tr>
-                                                </table>
-                                                <!-- // End Module: Standard Content \\ -->
-                                            
-                                            </td>
-                                        </tr>
-                                    </table>
-                                    <!-- // End Template Body \\ -->
+			<p><strong>Hello {{seller_firstname}},</strong></p>
+            
+            <p>The bidding is now closed for your vehicle and we're excited to say that we have a winning buyer.</p>
+            <p>It's time for the big reveal. Drumroll, please...</p>
+            <p class="bidAmount">Top Bid Amount: $bidAmount</p>
+            <p class="bidDetails">Dealership: &nbsp;{{user_business_name}}<br />
+            attn: {{user_first_name}} {{user_last_name}}<br />
+            {{user_address1}}<br />
+            {{#user_address2}}{{user_address2}}{{/user_address2}}<br />
+            {{user_city}}, {{user_state}} {{user_zipcode}}<br />
+            {{user_phone}}</p>
+            
+            
+<!-- Whats Next Box -->
+			<img src="{{imgdir}}/email/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+			<img src="{{imgdir}}/email/divider_grey.gif" width="639" height="2" style="display:block" />
+            <img src="{{imgdir}}/email/spacer-wht-full.jpg" width="635" height="10" style="display:block" />
+       		<h3>What's Next?</h3>
+			<p>At this point, it's up to you to move forward however you feel comfortable. If you're happy with the offer, contact the dealer directly and determine final steps to complete the sale (which typically consists of a simple vehicle inspection). If, however, you're not ready to pull the trigger, you are under no obligation to take any additional steps. Feel free to let the dealer know you are not interested at this time.</p>
+            
+			<p>Thanks for using HitFigure. Come back soon!</p>
+            
+			<p>~The HitFigure Team</p>
+            <img src="{{imgdir}}/email/spacer-wht-full.jpg" width="635" height="20" style="display:block" />
+              
+<!-- End Whats Next Box -->
+
+                                                          
+<!-- Helpful Resources Box -->
+            <table width="639" border="0" cellspacing="0" cellpadding="0">
+              <tr>
+              	<td width="30" height="15" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+              </tr>
+              <tr>
+                <td width="30" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="30" style="display:block" /></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><h4>Helpful Resources &raquo;</h4></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><a href="{{siteurl}}/faqs/" title="Hitfigure FAQ Page"><img src="{{imgdir}}/email/btn_faq_page.gif" alt="Hitfigure FAQ Page" border="0" title="Hitfigure FAQ Page" /></a></td>
+                <td width="193" align="center" valign="middle" bgcolor="#e5e5e5"><a href="{{siteurl}}/contact/" title="Contact Hitfigure"><img src="{{imgdir}}/email/btn_contact.gif" alt="Contact Hitfigure" border="0" title="Contact Hitfigure" /></a></td>
+                <td width="30" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="30" style="display:block" /></td>
+              </tr>
+              <tr>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="193" bgcolor="#e5e5e5">&nbsp;</td>
+                <td width="30" height="15" bgcolor="#e5e5e5"><img src="{{imgdir}}/email/spacer-grey.jpg" width="30" height="15" style="display:block" /></td>
+              </tr>
+            </table>
+<!-- End Helpful Resources Box -->
+
+
+<!-- // End Template Body \\ -->

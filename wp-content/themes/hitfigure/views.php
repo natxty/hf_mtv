@@ -43,6 +43,7 @@ function dashboard( $request ) {
 	
 	$hitfigure->admin->dashboard();	
 	$hitfigure->vars->merge('title', 'Dashboard');
+	$hitfigure->admin->set_current_nav_link('dashboard');
 		
 	display_mustache_template('dashboard', $hitfigure->vars->get());
 }
@@ -53,12 +54,9 @@ function view_leads( $request ) {
 	// View Leads
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+	$hitfigure->admin->set_current_nav_link('view_leads');
 	
-	$hitfigure->vars->merge(array(
-		'title'		=>'View Leads',
-		'pgheader'	=>'View Leads',
-		'is_all'	=>True
-	));
+	$hitfigure->admin->view_leads('all');
 		
 	display_mustache_template('viewleads', $hitfigure->vars->get());
 }
@@ -69,12 +67,9 @@ function view_won_leads( $request ) {
 	// View Leads
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+	$hitfigure->admin->set_current_nav_link('view_won_leads');
 		
-	$hitfigure->vars->merge(array(
-		'title'		=>'View Won Leads',
-		'pgheader'	=>'View Won Leads',
-		'is_all'	=>False
-	));
+	$hitfigure->admin->view_leads('won');
 		
 	display_mustache_template('viewleads', $hitfigure->vars->get());	
 }
@@ -152,18 +147,12 @@ function new_client( $request ) {
 function view_clients( $request ) {
 	// View Clients
 	$type	= $request['type']; // manufacturer / dealer / salesperson | accountant
-	
-	extract(client_type_to_name($type));
-	
+		
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+	$hitfigure->admin->set_current_nav_link('edit_client_'.$type);
 		
-	$hitfigure->vars->merge(array(
-		'title'					=>'View ' . $pluralname,
-		'pgheader'				=>'View ' . $pluralname,
-		'client_type'			=>$type,
-		'client_name'			=>$name
-	));	
+	$hitfigure->admin->view_clients($type);
 	
 	display_mustache_template('viewclients', $hitfigure->vars->get());
 }
@@ -191,6 +180,7 @@ function alert( $request ) {
 	$hitfigure->is_logged_in();
 
 	$hitfigure->admin->view_alert($id);
+	
 
 	display_mustache_template('alert',  $hitfigure->vars->get());
 } 
@@ -201,11 +191,9 @@ function view_alerts( $request ) {
 	// View Alerts
 	$hitfigure = HitFigure::getInstance();
 	$hitfigure->is_logged_in();
+	$hitfigure->admin->set_current_nav_link('view_alerts');
 	
-	$hitfigure->vars->merge(array(
-		'title'					=>'View Alerts' ,
-		'pgheader'				=>'View Alerts'
-	));		
+	$hitfigure->admin->view_alerts();
 	
 	display_mustache_template('viewalerts', $hitfigure->vars->get());	
 }

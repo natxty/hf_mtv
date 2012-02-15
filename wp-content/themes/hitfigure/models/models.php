@@ -271,9 +271,10 @@ class Vehicle extends Post {
 		$message = display_mustache_template('sellernewbid', $vars, False);
 
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title,
-			'hf_says'		=>"New bid on"
+			'message'			=>$message,
+			'vehicle_name'		=>$this->post_title,
+			'hf_says'			=>"New bid on",
+			'email_header_img'	=>'hdr_seller-new-bid.jpg'
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 		
@@ -295,9 +296,10 @@ class Vehicle extends Post {
 		$hitfigure = HitFigure::getInstance();
 		
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title,
-			'hf_says'		=>"Bidding has closed on"
+			'message'			=>$message,
+			'vehicle_name'		=>$this->post_title,
+			'hf_says'			=>"Bidding has closed on",
+			'email_header_img'	=>'hdr_seller-bidding-closed.jpg'
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 		
@@ -314,9 +316,10 @@ class Vehicle extends Post {
 		$hitfigure = HitFigure::getInstance();
 		
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title,
-			'hf_says'		=>"Bidding has closed on"
+			'message'			=>$message,
+			'vehicle_name'		=>$this->post_title,
+			'hf_says'			=>"Bidding has closed on",
+			'email_header_img'	=>'hdr_seller-no-bids.jpg'
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 		
@@ -333,9 +336,10 @@ class Vehicle extends Post {
 		$message = display_mustache_template('sellerconfirmnewlead', $vars, False);
 		
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$message,
-			'vehicle_name'	=>$this->post_title,
-			'hf_says'		=>"New vehicle submitted"
+			'message'			=>$message,
+			'vehicle_name'		=>$this->post_title,
+			'hf_says'			=>"New vehicle submitted",
+			'email_header_img'	=>'hdr_seller-submitted.jpg'
 		));
 		$html = display_mustache_template('emailshell', $vars, false);
 
@@ -354,9 +358,10 @@ class Vehicle extends Post {
 		$sender_email	= $hitfigure->admin->user->data->user_email;
 		
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$amputated,
-			'vehicle_name'	=>$this->post_title,
-			'hf_says'		=>"Message from " . $sender_name
+			'message'			=>$amputated,
+			'vehicle_name'		=>$this->post_title,
+			'hf_says'			=>"Message from " . $sender_name,
+			'email_header_img'	=>'hdr_seller-submitted.jpg'
 		));		
 		$html = display_mustache_template('emailshell', $vars, false);
 		$hitfigure->send_email("New Message from ".$sender_name, $html, $this->post_meta['seller_email'], $sender_email, $amputated);
@@ -365,7 +370,7 @@ class Vehicle extends Post {
 }
 
 
-/* Vechicle Image Attachment */
+/* Vehicle Image Attachment */
 
 class VehicleAttachment extends Attachment {
 
@@ -540,6 +545,7 @@ class AlertCollection extends PostCollection {
 
 class Alert extends Post {
 	public $defaults = array('post_type' => 'cpt-alert', 'post_status'=>'publish');
+	public $email_header_img = null;
 	
 	public function save() {
 		
@@ -604,11 +610,12 @@ class Alert extends Post {
 		
 		$hitfigure = HitFigure::getInstance();
 		$vars = $hitfigure->get_wp_data(array(
-			'message'		=>$this->post_content, 
-			'is_alert'		=>true,
-			'vehicle_id'	=>$vehicle_id,
-			'vehicle_name'	=>$vehicle->post_title,
-			'hf_says'		=>$this->alert_type()
+			'message'			=>$this->post_content, 
+			'is_alert'			=>true,
+			'vehicle_id'		=>$vehicle_id,
+			'vehicle_name'		=>$vehicle->post_title,
+			'hf_says'			=>$this->alert_type(),
+			'email_header_img'	=>$this->email_header_img
 		));
 		
 		$message 	= display_mustache_template('emailshell', $vars, false);
@@ -681,6 +688,8 @@ class AlertWon extends AlertVehicle  {
 		)
 	);
 	
+	public $email_header_img = 'hdr_dealer-lead-won.jpg';
+	
 	protected function alert_type() {
 		return 'Won';
 	}
@@ -701,6 +710,8 @@ class AlertOutbid extends AlertVehicle  {
 			'alert_dismissed'	=> false
 		)
 	);
+	
+	public $email_header_img = 'hdr_dealer-outbid.jpg';
 	
 	protected function alert_type() {
 		return 'Outbid';
@@ -723,6 +734,8 @@ class AlertNewbid extends AlertVehicle  {
 		)
 	);
 	
+	public $email_header_img = 'hdr_dealer-bid-placed.jpg';
+	
 	protected function alert_type() {
 		return 'New bid';
 	}
@@ -743,6 +756,8 @@ class AlertNewlead extends AlertVehicle  {
 			'alert_dismissed'	=> false
 		)
 	);
+	
+	public $email_header_img = 'hdr_dealer-new-lead.jpg';	
 
 	protected function alert_type() {
 		return 'New lead';
@@ -905,10 +920,44 @@ class ClientCollection extends UserCollection {
 	public static $model = "hitfigure\models\Client";	
 	public static $role = Null;
 
+	public static $DEALER		= 'dealer';
+	public static $MANUFACTURER	= 'manufacturer';	
+	public static $SALESPERSON 	= 'salesperson';
+	public static $ACCOUNTANT 	= 'accountant';
+	
 	public static function filter( $kwargs ) {
 		$kwargs['role'] = static::$role;
-		return parent::filter( $kwargs );
+		return parent::filter( $kwargs );		
 	}
+	
+	
+	
+	/* NOT WORKING>>>>>>:(
+	// We're doing some special stuff here, so...
+	public static function filter( $kwargs ) {
+		$kwargs['role'] = static::$role;
+	
+        $class = get_called_class();
+        $users = get_users( $kwargs );
+        $collection = new $class();
+        foreach ($users as $u) {
+        
+        	// First we get the role...
+        	$user = new WP_User( $u->ID );
+        	if (!empty( $user->roles ) && is_array( $user->roles )) {
+        		$type = $user->roles[0];
+        	} else {
+        		$type = null; // We don't know the type...
+        	}
+        	
+        	$new_user = self::get_client((array)$u,$type);
+            $collection->add( $new_user );
+        }
+        return $collection;	
+	
+	}
+	*/
+	
 	
 	public static function get_json_client_data($args = array()) {	
 		$clients = static::filter($args);
@@ -919,6 +968,34 @@ class ClientCollection extends UserCollection {
 		}
 		
 		return $clients_json;
+	}
+	
+	public static function get_client($args=array(),$type=null) {
+		$client = null;
+	
+		switch($type) {
+			case 'manufacturer':
+				$client = new Manufacturer($args);
+				break;
+			case 'dealer':
+				$client = new Dealer($args);
+				break;
+			case 'salesperson':
+				$client = new SalesPerson($args);
+				break;
+			case 'accountant':
+				$client = new Accountant($args);
+				break;
+			default:
+				$client = new Client($args);	
+		}
+		
+		// Fetch if we have an id...
+		if ($client && isset($args['id']) ) {
+			$new_user->reload( $args );
+		}
+	
+		return $client;
 	}
 	
 }
@@ -1093,7 +1170,7 @@ class AccountantCollection extends ClientCollection {
 
 
 class Accountant extends Client {
-	public $role = 'Accountant';
+	public $role = 'accountant';
 	
 	public function register() {
 		$r = parent::register();
