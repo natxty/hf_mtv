@@ -459,7 +459,8 @@ function how_it_works() {
 	$b->setProperties(array(
 		'id' => 'id_confirm',
 		'name'	=> 'confirm',
-		'text'	=> 'Confirm'
+		'text'	=> 'Confirm',
+		'class' => 'frontFormBtn'
 	));
 	$f->add($b);
 

@@ -339,7 +339,7 @@ var frontEnd = (function(){
         self.active_step = self.steps[step_number].show();
         self.active_step_number = step_number;
         
-        jQuery(".seller_form_container a.button").click(function(e) {
+        jQuery(".seller_form_container .frontFormBtn").click(function(e) {
             e.preventDefault();
             errors = false; //assume there are no errors pre-validation 
             
@@ -357,9 +357,6 @@ var frontEnd = (function(){
             self.active_step.find('.required').parent('.RadioGroup').each(function(){
                 validateRadio(jQuery(this));
             });
-            
-            console.log(errors);
-            console.log(self.active_step);
             
             if(!errors) {
                 if(self.active_step != self.steps[3]) {
